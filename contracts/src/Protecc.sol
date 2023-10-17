@@ -166,21 +166,27 @@ contract Protecc is BaseHook, ERC20, IERC1155Receiver, ReentrancyGuard {
         PoolKey calldata,
         uint160,
         bytes calldata
-    ) external override returns (bytes4) {}
+    ) external override returns (bytes4) {
+        return BaseHook.beforeInitialize.selector;
+    }
 
     function beforeModifyPosition(
         address,
         PoolKey calldata,
         IPoolManager.ModifyPositionParams calldata,
         bytes calldata
-    ) external override returns (bytes4) {}
+    ) external override returns (bytes4) {
+        return BaseHook.beforeModifyPosition.selector;
+    }
 
     function beforeSwap(
         address,
         PoolKey calldata,
         IPoolManager.SwapParams calldata,
         bytes calldata
-    ) external override returns (bytes4) {}
+    ) external override returns (bytes4) {
+        return BaseHook.beforeSwap.selector;
+    }
 
     function afterSwap(
         address,
@@ -188,5 +194,7 @@ contract Protecc is BaseHook, ERC20, IERC1155Receiver, ReentrancyGuard {
         IPoolManager.SwapParams calldata,
         BalanceDelta,
         bytes calldata
-    ) external override returns (bytes4) {}
+    ) external override returns (bytes4) {
+        return BaseHook.afterSwap.selector;
+    }
 }
