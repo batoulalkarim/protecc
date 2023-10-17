@@ -1,3 +1,6 @@
 [submodule "contracts/lib/periphery-next"]
 	path = contracts/lib/periphery-next
 	url = https://github.com/Uniswap/periphery-next
+[submodule "contracts/lib/openzeppelin-contracts"]
+	path = contracts/lib/openzeppelin-contracts
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts
