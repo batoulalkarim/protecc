@@ -7,6 +7,7 @@ import {HookTest} from "./utils/Hook.t.sol";
 import {Deployers} from "@uniswap/v4-core/test/foundry-tests/utils/Deployers.sol";
 import {HookMiner} from "./utils/libraries/HookMiner.sol";
 import {Hooks} from "@uniswap/v4-core/contracts/libraries/Hooks.sol";
+import {NewIdeaImplementation} from "../src/implementation/NewIdeaImplementation.sol";
 
 contract NewIdeaTest is HookTest, Deployers, GasSnapshot {
     NewIdea public hook;
@@ -31,5 +32,8 @@ contract NewIdeaTest is HookTest, Deployers, GasSnapshot {
             address(hook) == hookAddress,
             "NewHookTest:Hook address mismatch"
         );
+
+        NewIdeaImplementation impl = new NewIdeaImplementation(manager, hook);
+        HookTest.etchHook(address(impl), address(hook));
     }
 }
