@@ -9,9 +9,12 @@ import {CurrencyLibrary, Currency} from "@uniswap/v4-core/contracts/types/Curren
 import {IPoolManager} from "@uniswap/v4-core/contracts/interfaces/IPoolManager.sol";
 import {BalanceDelta} from "@uniswap/v4-core/contracts/types/BalanceDelta.sol";
 
-contract NewHook is BaseHook {
+contract NewIdea is BaseHook {
     using PoolIdLibrary for PoolKey;
     using CurrencyLibrary for Currency;
+
+    address public immutable savingsDai =
+        0x83F20F44975D03b1b09e64809B757c47f942BEeA;
 
     constructor(IPoolManager _poolManager) BaseHook(_poolManager) {}
 
@@ -35,6 +38,17 @@ contract NewHook is BaseHook {
         IPoolManager.SwapParams calldata params,
         bytes calldata
     ) external view override returns (bytes4) {
+        // Need a function to handle ETH
+        //   If user is sending token and receiving ETH
+        //   If user is sending ETH and receiving token
+
+        // Need a function to handle DAI
+        //   If user is sending token and receiving DAI
+        //     - unwind the sDAI, give back some DAI and give
+        //     - the yield to the LP (how do I know who is LPing?)
+        //   If user is sending DAI and receiving token
+        //     - do nothing I guess (will be handled in afterSwap)... or
+        //     - wrap the DAI so that it becomes sDAI
         return BaseHook.beforeSwap.selector;
     }
 
@@ -48,99 +62,99 @@ contract NewHook is BaseHook {
         return BaseHook.afterSwap.selector;
     }
 
-    function swap(
-        address sender,
-        PoolKey memory key,
-        IPoolManager.SwapParams memory params
-    ) public returns (BalanceDelta delta) {
-        delta = poolManager.swap(key, params, abi.encode(""));
-        if (params.zeroForOne) {
-            if (delta.amount0() > 0) {
-                if (key.currency0.isNative()) {
-                    poolManager.settle{value: uint128(delta.amount0())}(
-                        key.currency0
-                    );
-                } else {
-                    ERC20(Currency.unwrap(key.currency0)).transfer(
-                        address(poolManager),
-                        uint128(delta.amount0())
-                    );
-                    poolManager.settle(key.currency0);
-                }
-            }
-            if (delta.amount1() < 0) {
-                poolManager.take(
-                    key.currency1,
-                    sender,
-                    uint128(-delta.amount1())
-                );
-            }
-        } else {
-            if (delta.amount1() > 0) {
-                if (key.currency1.isNative()) {
-                    poolManager.settle{value: uint128(delta.amount1())}(
-                        key.currency1
-                    );
-                } else {
-                    ERC20(Currency.unwrap(key.currency1)).transfer(
-                        address(poolManager),
-                        uint128(delta.amount1())
-                    );
-                    poolManager.settle(key.currency1);
-                }
-            }
-            if (delta.amount0() < 0) {
-                poolManager.take(
-                    key.currency0,
-                    sender,
-                    uint128(-delta.amount0())
-                );
-            }
-        }
-    }
+    // function swap(
+    //     address sender,
+    //     PoolKey memory key,
+    //     IPoolManager.SwapParams memory params
+    // ) public returns (BalanceDelta delta) {
+    //     delta = poolManager.swap(key, params, abi.encode(""));
+    //     if (params.zeroForOne) {
+    //         if (delta.amount0() > 0) {
+    //             if (key.currency0.isNative()) {
+    //                 poolManager.settle{value: uint128(delta.amount0())}(
+    //                     key.currency0
+    //                 );
+    //             } else {
+    //                 ERC20(Currency.unwrap(key.currency0)).transfer(
+    //                     address(poolManager),
+    //                     uint128(delta.amount0())
+    //                 );
+    //                 poolManager.settle(key.currency0);
+    //             }
+    //         }
+    //         if (delta.amount1() < 0) {
+    //             poolManager.take(
+    //                 key.currency1,
+    //                 sender,
+    //                 uint128(-delta.amount1())
+    //             );
+    //         }
+    //     } else {
+    //         if (delta.amount1() > 0) {
+    //             if (key.currency1.isNative()) {
+    //                 poolManager.settle{value: uint128(delta.amount1())}(
+    //                     key.currency1
+    //                 );
+    //             } else {
+    //                 ERC20(Currency.unwrap(key.currency1)).transfer(
+    //                     address(poolManager),
+    //                     uint128(delta.amount1())
+    //                 );
+    //                 poolManager.settle(key.currency1);
+    //             }
+    //         }
+    //         if (delta.amount0() < 0) {
+    //             poolManager.take(
+    //                 key.currency0,
+    //                 sender,
+    //                 uint128(-delta.amount0())
+    //             );
+    //         }
+    //     }
+    // }
 
-    function modifyPosition(
-        PoolKey memory key,
-        IPoolManager.ModifyPositionParams memory params,
-        address caller
-    ) external returns (BalanceDelta delta) {
-        delta = poolManager.modifyPosition(key, params, abi.encode(""));
-        if (delta.amount0() > 0) {
-            if (key.currency0.isNative()) {
-                poolManager.settle{value: uint128(delta.amount0())}(
-                    key.currency0
-                );
-            } else {
-                ERC20(Currency.unwrap(key.currency0)).transferFrom(
-                    caller,
-                    address(poolManager),
-                    uint128(delta.amount0())
-                );
-                poolManager.settle(key.currency0);
-            }
-        }
-        if (delta.amount1() > 0) {
-            if (key.currency1.isNative()) {
-                poolManager.settle{value: uint128(delta.amount1())}(
-                    key.currency1
-                );
-            } else {
-                ERC20(Currency.unwrap(key.currency1)).transferFrom(
-                    caller,
-                    address(poolManager),
-                    uint128(delta.amount1())
-                );
-                poolManager.settle(key.currency1);
-            }
-        }
+    // function modifyPosition(
+    //     PoolKey memory key,
+    //     IPoolManager.ModifyPositionParams memory params,
+    //     address caller
+    // ) external returns (BalanceDelta delta) {
+    //     delta = poolManager.modifyPosition(key, params, abi.encode(""));
+    //     if (delta.amount0() > 0) {
+    //         if (key.currency0.isNative()) {
+    //             poolManager.settle{value: uint128(delta.amount0())}(
+    //                 key.currency0
+    //             );
+    //         } else {
+    //             ERC20(Currency.unwrap(key.currency0)).transferFrom(
+    //                 caller,
+    //                 address(poolManager),
+    //                 uint128(delta.amount0())
+    //             );
+    //             poolManager.settle(key.currency0);
+    //         }
+    //     }
+    //     if (delta.amount1() > 0) {
+    //         if (key.currency1.isNative()) {
+    //             poolManager.settle{value: uint128(delta.amount1())}(
+    //                 key.currency1
+    //             );
+    //         } else {
+    //             ERC20(Currency.unwrap(key.currency1)).transferFrom(
+    //                 caller,
+    //                 address(poolManager),
+    //                 uint128(delta.amount1())
+    //             );
+    //             poolManager.settle(key.currency1);
+    //         }
+    //     }
 
-        if (delta.amount0() < 0) {
-            poolManager.take(key.currency0, caller, uint128(-delta.amount0()));
-        }
-        if (delta.amount1() < 0) {
-            poolManager.take(key.currency1, caller, uint128(-delta.amount1()));
-        }
-    }
+    //     if (delta.amount0() < 0) {
+    //         poolManager.take(key.currency0, caller, uint128(-delta.amount0()));
+    //     }
+    //     if (delta.amount1() < 0) {
+    //         poolManager.take(key.currency1, caller, uint128(-delta.amount1()));
+    //     }
+    // }
 
     receive() external payable {}
 }
