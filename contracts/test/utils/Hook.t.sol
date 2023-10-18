@@ -65,6 +65,7 @@ contract HookTest is Test {
         swapRouter = new PoolSwapTest(IPoolManager(address(manager)));
         donateRouter = new PoolDonateTest(IPoolManager(address(manager)));
 
+        vm.startPrank(msg.sender);
         // Approve for liquidity provision
         token0.approve(address(modifyPositionRouter), amount);
         token1.approve(address(modifyPositionRouter), amount);
@@ -72,6 +73,7 @@ contract HookTest is Test {
         // Approve for swapping
         token0.approve(address(swapRouter), amount);
         token1.approve(address(swapRouter), amount);
+        vm.stopPrank();
     }
 
     function etchHook(address _implementation, address _hook) internal {

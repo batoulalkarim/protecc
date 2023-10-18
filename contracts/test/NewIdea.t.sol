@@ -13,6 +13,7 @@ import {PoolKey} from "@uniswap/v4-core/contracts/types/PoolKey.sol";
 import {PoolId, PoolIdLibrary} from "@uniswap/v4-core/contracts/types/PoolId.sol";
 import {CurrencyLibrary, Currency} from "@uniswap/v4-core/contracts/types/Currency.sol";
 import {IHooks} from "@uniswap/v4-core/contracts/interfaces/IHooks.sol";
+import {TickMath} from "@uniswap/v4-core/contracts/libraries/TickMath.sol";
 
 contract NewIdeaTest is HookTest, Deployers, GasSnapshot {
     using PoolIdLibrary for PoolKey;
@@ -58,6 +59,29 @@ contract NewIdeaTest is HookTest, Deployers, GasSnapshot {
         });
         poolId = poolKey.toId();
         manager.initialize(poolKey, SQRT_RATIO_1_1, abi.encode(""));
+
+        // Provide liquidity to the pool
+        vm.startPrank(msg.sender);
+        modifyPositionRouter.modifyPosition(
+            poolKey,
+            IPoolManager.ModifyPositionParams(-60, 60, 1_000e18),
+            ZERO_BYTES
+        );
+        modifyPositionRouter.modifyPosition(
+            poolKey,
+            IPoolManager.ModifyPositionParams(-120, 120, 1_000e18),
+            ZERO_BYTES
+        );
+        modifyPositionRouter.modifyPosition(
+            poolKey,
+            IPoolManager.ModifyPositionParams(
+                TickMath.minUsableTick(60),
+                TickMath.maxUsableTick(60),
+                1_000e18
+            ),
+            ZERO_BYTES
+        );
+        vm.stopPrank();
     }
 
     // Add your tests here:
