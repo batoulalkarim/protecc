@@ -16,15 +16,6 @@ import {PoolDonateTest} from "@uniswap/v4-core/contracts/test/PoolDonateTest.sol
 import {TestERC20} from "@uniswap/v4-core/contracts/test/TestERC20.sol";
 import {TickMath} from "@uniswap/v4-core/contracts/libraries/TickMath.sol";
 
-interface Vm {
-    function deal(
-        address token,
-        address to,
-        uint256 give,
-        bool adjust
-    ) external;
-}
-
 contract HookTest is Test {
     PoolManager manager;
     PoolModifyPositionTest modifyPositionRouter;
@@ -35,21 +26,23 @@ contract HookTest is Test {
     TestERC20 token0;
     TestERC20 token1;
 
+    /// @dev has a lot of DAI on mainnet
+    address public constant DAI_WHALE =
+        0x25B313158Ce11080524DcA0fD01141EeD5f94b81;
+
     uint160 public constant MIN_PRICE_LIMIT = TickMath.MIN_SQRT_RATIO + 1;
     uint160 public constant MAX_PRICE_LIMIT = TickMath.MAX_SQRT_RATIO - 1;
 
     function initHookTestEnv() public {
-        uint256 amount = 2 ** 128;
+        uint256 amount = 1_000_000e18;
         TestERC20 _tokenA = new TestERC20(amount);
         TestERC20 _tokenB = TestERC20(
-            address(0x6B175474E89094C44Da98b954EedeAC495271d0F) // This is the DAI address
+            0x6B175474E89094C44Da98b954EedeAC495271d0F // DAI address on main
         );
-        Vm(address(vm)).deal(
-            address(_tokenB),
-            address(msg.sender),
-            amount,
-            true
-        );
+
+        deal(address(_tokenA), msg.sender, amount);
+        vm.prank(DAI_WHALE);
+        deal(address(_tokenB), msg.sender, amount);
 
         /// @dev at this point, the user has new 2^128 DAI and 2^128 of the other token
 

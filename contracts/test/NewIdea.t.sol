@@ -61,4 +61,10 @@ contract NewIdeaTest is HookTest, Deployers, GasSnapshot {
     }
 
     // Add your tests here:
+    function test_balances() public {
+        // DAI amount
+        assertEq(token0.balanceOf(msg.sender), 1_000_000e18);
+        // New token amount
+        assertEq(token1.balanceOf(msg.sender), 1_000_000e18);
+    }
 }
