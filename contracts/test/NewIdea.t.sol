@@ -8,9 +8,21 @@ import {Deployers} from "@uniswap/v4-core/test/foundry-tests/utils/Deployers.sol
 import {HookMiner} from "./utils/libraries/HookMiner.sol";
 import {Hooks} from "@uniswap/v4-core/contracts/libraries/Hooks.sol";
 import {NewIdeaImplementation} from "../src/implementation/NewIdeaImplementation.sol";
+import {IPoolManager} from "@uniswap/v4-core/contracts/interfaces/IPoolManager.sol";
+import {PoolKey} from "@uniswap/v4-core/contracts/types/PoolKey.sol";
+import {PoolId, PoolIdLibrary} from "@uniswap/v4-core/contracts/types/PoolId.sol";
+import {CurrencyLibrary, Currency} from "@uniswap/v4-core/contracts/types/Currency.sol";
+import {IHooks} from "@uniswap/v4-core/contracts/interfaces/IHooks.sol";
 
 contract NewIdeaTest is HookTest, Deployers, GasSnapshot {
+    using PoolIdLibrary for PoolKey;
+    using CurrencyLibrary for Currency;
+
     NewIdea public hook;
+    PoolKey poolKey;
+    PoolId poolId;
+
+    address alice = makeAddr("alice");
 
     function setUp() public {
         HookTest.initHookTestEnv();
@@ -35,5 +47,18 @@ contract NewIdeaTest is HookTest, Deployers, GasSnapshot {
 
         NewIdeaImplementation impl = new NewIdeaImplementation(manager, hook);
         HookTest.etchHook(address(impl), address(hook));
+
+        /// @dev Create pool
+        poolKey = PoolKey({
+            currency0: Currency.wrap(address(token0)),
+            currency1: Currency.wrap(address(token1)),
+            fee: 3000,
+            tickSpacing: 60,
+            hooks: IHooks(hook)
+        });
+        poolId = poolKey.toId();
+        manager.initialize(poolKey, SQRT_RATIO_1_1, abi.encode(""));
     }
+
+    // Add your tests here:
 }
