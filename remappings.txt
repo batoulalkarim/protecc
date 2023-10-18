@@ -1,1 +1,2 @@
+axelar-gmp-sdk-solidity/=lib/axelar-gmp-sdk-solidity
 openzeppelin/=lib/openzeppelin-contracts
