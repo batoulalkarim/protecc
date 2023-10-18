@@ -16,6 +16,15 @@ import {PoolDonateTest} from "@uniswap/v4-core/contracts/test/PoolDonateTest.sol
 import {TestERC20} from "@uniswap/v4-core/contracts/test/TestERC20.sol";
 import {TickMath} from "@uniswap/v4-core/contracts/libraries/TickMath.sol";
 
+interface Vm {
+    function deal(
+        address token,
+        address to,
+        uint256 give,
+        bool adjust
+    ) external;
+}
+
 contract HookTest is Test {
     PoolManager manager;
     PoolModifyPositionTest modifyPositionRouter;
@@ -35,7 +44,12 @@ contract HookTest is Test {
         TestERC20 _tokenB = TestERC20(
             address(0x6B175474E89094C44Da98b954EedeAC495271d0F) // This is the DAI address
         );
-        vm.deal(address(msg.sender), address(_tokenB), amount);
+        Vm(address(vm)).deal(
+            address(_tokenB),
+            address(msg.sender),
+            amount,
+            true
+        );
 
         /// @dev at this point, the user has new 2^128 DAI and 2^128 of the other token
 
