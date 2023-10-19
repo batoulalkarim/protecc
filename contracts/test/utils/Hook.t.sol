@@ -16,7 +16,7 @@ import {PoolDonateTest} from "@uniswap/v4-core/contracts/test/PoolDonateTest.sol
 import {TestERC20} from "@uniswap/v4-core/contracts/test/TestERC20.sol";
 import {TickMath} from "@uniswap/v4-core/contracts/libraries/TickMath.sol";
 
-contract HookTest is Test {
+abstract contract HookTest is Test {
     PoolManager manager;
     PoolModifyPositionTest modifyPositionRouter;
     PoolSwapTest swapRouter;

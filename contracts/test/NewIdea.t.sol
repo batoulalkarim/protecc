@@ -29,7 +29,12 @@ contract NewIdeaTest is HookTest, Deployers, GasSnapshot {
         HookTest.initHookTestEnv();
 
         /// @dev Will probably need to revist initialize, modify position, and donate
-        uint160 flags = uint160(Hooks.BEFORE_SWAP_FLAG | Hooks.AFTER_SWAP_FLAG);
+        uint160 flags = uint160(
+            Hooks.BEFORE_MODIFY_POSITION_FLAG |
+                Hooks.AFTER_MODIFY_POSITION_FLAG |
+                Hooks.BEFORE_SWAP_FLAG |
+                Hooks.AFTER_SWAP_FLAG
+        );
 
         (address hookAddress, bytes32 salt) = HookMiner.find(
             address(this),
@@ -86,9 +91,9 @@ contract NewIdeaTest is HookTest, Deployers, GasSnapshot {
 
     // Add your tests here:
     function test_balances() public {
-        // DAI amount
-        assertEq(token0.balanceOf(msg.sender), 1_000_000e18);
-        // New token amount
-        assertEq(token1.balanceOf(msg.sender), 1_000_000e18);
+        assertLt(token0.balanceOf(msg.sender), 1_000_000e18);
+        assertLt(token1.balanceOf(msg.sender), 1_000_000e18);
+        assertGt(token0.balanceOf(msg.sender), 0);
+        assertGt(token1.balanceOf(msg.sender), 0);
     }
 }

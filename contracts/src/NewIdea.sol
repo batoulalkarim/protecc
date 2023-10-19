@@ -23,8 +23,8 @@ contract NewIdea is BaseHook {
             Hooks.Calls({
                 beforeInitialize: false,
                 afterInitialize: false,
-                beforeModifyPosition: false,
-                afterModifyPosition: false,
+                beforeModifyPosition: true,
+                afterModifyPosition: true,
                 beforeSwap: true,
                 afterSwap: true,
                 beforeDonate: false,
@@ -62,99 +62,24 @@ contract NewIdea is BaseHook {
         return BaseHook.afterSwap.selector;
     }
 
-    // function swap(
-    //     address sender,
-    //     PoolKey memory key,
-    //     IPoolManager.SwapParams memory params
-    // ) public returns (BalanceDelta delta) {
-    //     delta = poolManager.swap(key, params, abi.encode(""));
-    //     if (params.zeroForOne) {
-    //         if (delta.amount0() > 0) {
-    //             if (key.currency0.isNative()) {
-    //                 poolManager.settle{value: uint128(delta.amount0())}(
-    //                     key.currency0
-    //                 );
-    //             } else {
-    //                 ERC20(Currency.unwrap(key.currency0)).transfer(
-    //                     address(poolManager),
-    //                     uint128(delta.amount0())
-    //                 );
-    //                 poolManager.settle(key.currency0);
-    //             }
-    //         }
-    //         if (delta.amount1() < 0) {
-    //             poolManager.take(
-    //                 key.currency1,
-    //                 sender,
-    //                 uint128(-delta.amount1())
-    //             );
-    //         }
-    //     } else {
-    //         if (delta.amount1() > 0) {
-    //             if (key.currency1.isNative()) {
-    //                 poolManager.settle{value: uint128(delta.amount1())}(
-    //                     key.currency1
-    //                 );
-    //             } else {
-    //                 ERC20(Currency.unwrap(key.currency1)).transfer(
-    //                     address(poolManager),
-    //                     uint128(delta.amount1())
-    //                 );
-    //                 poolManager.settle(key.currency1);
-    //             }
-    //         }
-    //         if (delta.amount0() < 0) {
-    //             poolManager.take(
-    //                 key.currency0,
-    //                 sender,
-    //                 uint128(-delta.amount0())
-    //             );
-    //         }
-    //     }
-    // }
+    function beforeModifyPosition(
+        address sender,
+        PoolKey calldata poolKey,
+        IPoolManager.ModifyPositionParams calldata params,
+        bytes calldata hookData
+    ) external view override returns (bytes4) {
+        return BaseHook.beforeModifyPosition.selector;
+    }
 
-    // function modifyPosition(
-    //     PoolKey memory key,
-    //     IPoolManager.ModifyPositionParams memory params,
-    //     address caller
-    // ) external returns (BalanceDelta delta) {
-    //     delta = poolManager.modifyPosition(key, params, abi.encode(""));
-    //     if (delta.amount0() > 0) {
-    //         if (key.currency0.isNative()) {
-    //             poolManager.settle{value: uint128(delta.amount0())}(
-    //                 key.currency0
-    //             );
-    //         } else {
-    //             ERC20(Currency.unwrap(key.currency0)).transferFrom(
-    //                 caller,
-    //                 address(poolManager),
-    //                 uint128(delta.amount0())
-    //             );
-    //             poolManager.settle(key.currency0);
-    //         }
-    //     }
-    //     if (delta.amount1() > 0) {
-    //         if (key.currency1.isNative()) {
-    //             poolManager.settle{value: uint128(delta.amount1())}(
-    //                 key.currency1
-    //             );
-    //         } else {
-    //             ERC20(Currency.unwrap(key.currency1)).transferFrom(
-    //                 caller,
-    //                 address(poolManager),
-    //                 uint128(delta.amount1())
-    //             );
-    //             poolManager.settle(key.currency1);
-    //         }
-    //     }
-
-    //     if (delta.amount0() < 0) {
-    //         poolManager.take(key.currency0, caller, uint128(-delta.amount0()));
-    //     }
-    //     if (delta.amount1() < 0) {
-    //         poolManager.take(key.currency1, caller, uint128(-delta.amount1()));
-    //     }
-    // }
+    function afterModifyPosition(
+        address sender,
+        PoolKey calldata poolKey,
+        IPoolManager.ModifyPositionParams calldata params,
+        BalanceDelta delta,
+        bytes calldata hookData
+    ) external override returns (bytes4) {
+        return BaseHook.afterModifyPosition.selector;
+    }
 
     receive() external payable {}
 }
