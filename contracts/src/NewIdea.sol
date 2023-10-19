@@ -46,8 +46,8 @@ contract NewIdea is BaseHook {
     }
 
     function beforeSwap(
-        address sender,
-        PoolKey calldata poolKey,
+        address,
+        PoolKey calldata,
         IPoolManager.SwapParams calldata params,
         bytes calldata
     ) external override returns (bytes4) {
@@ -63,40 +63,36 @@ contract NewIdea is BaseHook {
     }
 
     function afterSwap(
-        address sender,
-        PoolKey calldata poolKey,
-        IPoolManager.SwapParams calldata params,
-        BalanceDelta delta,
-        bytes calldata hookData
+        address,
+        PoolKey calldata,
+        IPoolManager.SwapParams calldata,
+        BalanceDelta,
+        bytes calldata
     ) external override returns (bytes4) {
         _makeSavingsDai();
         return BaseHook.afterSwap.selector;
     }
 
     function beforeModifyPosition(
-        address sender,
-        PoolKey calldata poolKey,
+        address,
+        PoolKey calldata,
         IPoolManager.ModifyPositionParams calldata params,
-        bytes calldata hookData
-    ) external view override returns (bytes4) {
-        if (liquidityDelta < 0) {
+        bytes calldata
+    ) external override returns (bytes4) {
+        if (params.liquidityDelta < 0) {
             // They are removing liquidity
             // Make DAI available and let them remove
             _makeDaiAvail();
-        } else {
-            // They are adding liquidity
-            // Convert dai
-            _makeSavingsDai();
         }
         return BaseHook.beforeModifyPosition.selector;
     }
 
     function afterModifyPosition(
-        address sender,
-        PoolKey calldata poolKey,
-        IPoolManager.ModifyPositionParams calldata params,
-        BalanceDelta delta,
-        bytes calldata hookData
+        address,
+        PoolKey calldata,
+        IPoolManager.ModifyPositionParams calldata,
+        BalanceDelta,
+        bytes calldata
     ) external override returns (bytes4) {
         // There is either less or more dai
         // Now convert everything back to savings dai
