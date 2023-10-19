@@ -79,6 +79,15 @@ contract NewIdea is BaseHook {
         IPoolManager.ModifyPositionParams calldata params,
         bytes calldata hookData
     ) external view override returns (bytes4) {
+        if (liquidityDelta < 0) {
+            // They are removing liquidity
+            // Make DAI available and let them remove
+            _makeDaiAvail();
+        } else {
+            // They are adding liquidity
+            // Convert dai
+            _makeSavingsDai();
+        }
         return BaseHook.beforeModifyPosition.selector;
     }
 
@@ -89,6 +98,10 @@ contract NewIdea is BaseHook {
         BalanceDelta delta,
         bytes calldata hookData
     ) external override returns (bytes4) {
+        // There is either less or more dai
+        // Now convert everything back to savings dai
+        _makeSavingsDai();
+
         return BaseHook.afterModifyPosition.selector;
     }
 
