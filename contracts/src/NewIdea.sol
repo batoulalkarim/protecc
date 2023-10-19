@@ -20,6 +20,7 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Constants} from "./libraries/Constants.sol";
 
 contract NewIdea is BaseHook {
+    // Note: Figure out how to store out of range DAI as sDAI and then roll them back into DAI at nearby ticks
     using PoolIdLibrary for PoolKey;
     using CurrencyLibrary for Currency;
 
