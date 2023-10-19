@@ -1,16 +1,23 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity 0.8.20;
 
+// Uniswap V4
 import {BaseHook} from "periphery-next/BaseHook.sol";
 import {Hooks} from "@uniswap/v4-core/contracts/libraries/Hooks.sol";
 import {PoolId, PoolIdLibrary} from "@uniswap/v4-core/contracts/types/PoolId.sol";
 import {PoolKey} from "@uniswap/v4-core/contracts/types/PoolKey.sol";
 import {CurrencyLibrary, Currency} from "@uniswap/v4-core/contracts/types/Currency.sol";
-import {IPoolManager} from "@uniswap/v4-core/contracts/interfaces/IPoolManager.sol";
 import {BalanceDelta} from "@uniswap/v4-core/contracts/types/BalanceDelta.sol";
 
-import {Constants} from "./libraries/Constants.sol";
+// Interafces
+import {IPoolManager} from "@uniswap/v4-core/contracts/interfaces/IPoolManager.sol";
+import {ISavingsDai} from "./external/sdai/ISavingsDai.sol";
+
+// Open Zeppelin
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+
+// Other
+import {Constants} from "./libraries/Constants.sol";
 
 contract NewIdea is BaseHook {
     using PoolIdLibrary for PoolKey;
@@ -44,7 +51,7 @@ contract NewIdea is BaseHook {
         bytes calldata
     ) external view override returns (bytes4) {
         if (params.zeroForOne) {
-            if (poolKey.currency0 == dai) {
+            if (poolKey.currency0 == Currency.wrap(dai)) {
                 // User is swapping from dai to token
                 // Do nothing (handled afterSwap)
             } else {
@@ -53,7 +60,7 @@ contract NewIdea is BaseHook {
                 // Whatever is left, convert it back to sDAI
             }
         } else {
-            if (poolKey.currency1 == dai) {
+            if (poolKey.currency1 == Currency.wrap(dai)) {
                 // User is swapping from dai to token
                 // Do nothing (handled afterSwap)
             } else {
@@ -74,7 +81,7 @@ contract NewIdea is BaseHook {
         bytes calldata hookData
     ) external override returns (bytes4) {
         if (params.zeroForOne) {
-            if (poolKey.currency0 == dai) {
+            if (poolKey.currency0 == Currency.wrap(dai)) {
                 // User is swapping from dai to token
                 // There is now excess dai in this pool, swap it for sDAI
             } else {
@@ -82,7 +89,7 @@ contract NewIdea is BaseHook {
                 // Do nothing
             }
         } else {
-            if (poolKey.currency1 == dai) {
+            if (poolKey.currency1 == Currency.wrap(dai)) {
                 // User is swapping from dai to token
                 // Do nothing
             } else {
