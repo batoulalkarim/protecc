@@ -23,10 +23,11 @@ contract NewIdea is BaseHook {
     using PoolIdLibrary for PoolKey;
     using CurrencyLibrary for Currency;
 
-    address public immutable savingsDai = (
-        0x83F20F44975D03b1b09e64809B757c47f942BEeA
-    );
-    address public immutable dai = (0x6B175474E89094C44Da98b954EedeAC495271d0F);
+    ISavingsDai public immutable savingsDai =
+        ISavingsDai(0x83F20F44975D03b1b09e64809B757c47f942BEeA);
+
+    ERC20 public immutable dai =
+        ERC20(0x6B175474E89094C44Da98b954EedeAC495271d0F);
 
     constructor(IPoolManager _poolManager) BaseHook(_poolManager) {}
 
@@ -49,23 +50,34 @@ contract NewIdea is BaseHook {
         PoolKey calldata poolKey,
         IPoolManager.SwapParams calldata params,
         bytes calldata
-    ) external view override returns (bytes4) {
+    ) external override returns (bytes4) {
         if (params.zeroForOne) {
-            if (poolKey.currency0 == Currency.wrap(dai)) {
+            if (poolKey.currency0 == Currency.wrap(address(dai))) {
                 // User is swapping from dai to token
                 // Do nothing (handled afterSwap)
             } else {
                 // User is swapping from token to dai
                 // Take the existing sDAI, unwind it (to DAI; compare with SwapParams) and give it to user
-                // Whatever is left, convert it back to sDAI
+                (, uint256 assets) = _makeDaiAvail();
+
+                require(
+                    assets >= uint256(params.amountSpecified),
+                    "Not enough assets to trade"
+                );
             }
         } else {
-            if (poolKey.currency1 == Currency.wrap(dai)) {
+            if (poolKey.currency1 == Currency.wrap(address(dai))) {
                 // User is swapping from dai to token
                 // Do nothing (handled afterSwap)
             } else {
-                // User is swapping from token to dai
-                // Take the existing sDAI, unwind it (to DAI; compare with SwapParams) and give it to user
+                (, uint256 assets) = _makeDaiAvail();
+
+                require(
+                    assets >= uint256(params.amountSpecified),
+                    "Not enough assets to trade"
+                );
+                // DAI is now available to trade
+                // Now the swap can take place
                 // Whatever is left, convert it back to sDAI
             }
         }
@@ -81,20 +93,22 @@ contract NewIdea is BaseHook {
         bytes calldata hookData
     ) external override returns (bytes4) {
         if (params.zeroForOne) {
-            if (poolKey.currency0 == Currency.wrap(dai)) {
+            if (poolKey.currency0 == Currency.wrap(address(dai))) {
                 // User is swapping from dai to token
                 // There is now excess dai in this pool, swap it for sDAI
+                _convertToSavingsDai();
             } else {
                 // User is swapping from token to dai
                 // Do nothing
             }
         } else {
-            if (poolKey.currency1 == Currency.wrap(dai)) {
+            if (poolKey.currency1 == Currency.wrap(address(dai))) {
                 // User is swapping from dai to token
                 // Do nothing
             } else {
                 // User is swapping from token to dai
                 // There is now excess dai in this pool, swap it for sDAI
+                _convertToSavingsDai();
             }
         }
         return BaseHook.afterSwap.selector;
@@ -117,6 +131,26 @@ contract NewIdea is BaseHook {
         bytes calldata hookData
     ) external override returns (bytes4) {
         return BaseHook.afterModifyPosition.selector;
+    }
+
+    function _makeDaiAvail() private returns (uint256 shares, uint256 assets) {
+        shares = savingsDai.maxWithdraw(
+            address(this) // owner
+        );
+
+        assets = savingsDai.redeem(
+            shares,
+            address(this), // reciever
+            address(this) // owner
+        );
+    }
+
+    function _convertToSavingsDai() private returns (uint256 shares) {
+        uint256 daiBalance = dai.balanceOf(address(this));
+        if (daiBalance > 0) {
+            dai.approve(address(savingsDai), daiBalance);
+            shares = savingsDai.deposit(daiBalance, address(this));
+        }
     }
 
     receive() external payable {}
