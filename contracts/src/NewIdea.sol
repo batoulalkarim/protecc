@@ -51,36 +51,13 @@ contract NewIdea is BaseHook {
         IPoolManager.SwapParams calldata params,
         bytes calldata
     ) external override returns (bytes4) {
-        if (params.zeroForOne) {
-            if (poolKey.currency0 == Currency.wrap(address(dai))) {
-                // User is swapping from dai to token
-                // Do nothing (handled afterSwap)
-            } else {
-                // User is swapping from token to dai
-                // Take the existing sDAI, unwind it (to DAI; compare with SwapParams) and give it to user
-                (, uint256 assets) = _makeDaiAvail();
-
-                require(
-                    assets >= uint256(params.amountSpecified),
-                    "Not enough assets to trade"
-                );
-            }
-        } else {
-            if (poolKey.currency1 == Currency.wrap(address(dai))) {
-                // User is swapping from dai to token
-                // Do nothing (handled afterSwap)
-            } else {
-                (, uint256 assets) = _makeDaiAvail();
-
-                require(
-                    assets >= uint256(params.amountSpecified),
-                    "Not enough assets to trade"
-                );
-                // DAI is now available to trade
-                // Now the swap can take place
-                // Whatever is left, convert it back to sDAI
-            }
-        }
+        // Regardless of what is happening, need to make DAI available
+        // so that the amounts in and out are calculated properly
+        (, uint256 assets) = _makeDaiAvail();
+        require(
+            assets >= uint256(params.amountSpecified),
+            "Not enough assets to trade"
+        );
 
         return BaseHook.beforeSwap.selector;
     }
@@ -92,25 +69,7 @@ contract NewIdea is BaseHook {
         BalanceDelta delta,
         bytes calldata hookData
     ) external override returns (bytes4) {
-        if (params.zeroForOne) {
-            if (poolKey.currency0 == Currency.wrap(address(dai))) {
-                // User is swapping from dai to token
-                // There is now excess dai in this pool, swap it for sDAI
-                _convertToSavingsDai();
-            } else {
-                // User is swapping from token to dai
-                // Do nothing
-            }
-        } else {
-            if (poolKey.currency1 == Currency.wrap(address(dai))) {
-                // User is swapping from dai to token
-                // Do nothing
-            } else {
-                // User is swapping from token to dai
-                // There is now excess dai in this pool, swap it for sDAI
-                _convertToSavingsDai();
-            }
-        }
+        _makeSavingsDai();
         return BaseHook.afterSwap.selector;
     }
 
@@ -137,15 +96,18 @@ contract NewIdea is BaseHook {
         shares = savingsDai.maxWithdraw(
             address(this) // owner
         );
-
+        // Need to figure out if this is the best way to do it... seems lazy
         assets = savingsDai.redeem(
             shares,
             address(this), // reciever
             address(this) // owner
         );
+        // Ideally should only make the DAI that is being deposited available
+        // so that the price of the paired token does not get skewed incorrectly
+        // Note: When we redeem, we should isolate deposited DAI and earned DAI
     }
 
-    function _convertToSavingsDai() private returns (uint256 shares) {
+    function _makeSavingsDai() private returns (uint256 shares) {
         uint256 daiBalance = dai.balanceOf(address(this));
         if (daiBalance > 0) {
             dai.approve(address(savingsDai), daiBalance);
