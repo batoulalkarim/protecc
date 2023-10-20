@@ -1,0 +1,24 @@
+.container {
+  color: white;
+  .content {
+    .ethAssets {
+      border: 1px solid white;
+    }
+    .daiAssets {
+      .imagesContainer {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+        border: 1px solid white;
+        justify-items: center;
+        // display: flex;
+        row-gap: 20px;
+        padding: 10px;
+        .image {
+          background-color: rgb(42, 40, 40);
+          padding: 0 25px 25px 25px;
+          border-radius: 20px;
+        }
+      }
+    }
+  }
+}

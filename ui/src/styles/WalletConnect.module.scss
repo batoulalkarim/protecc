@@ -1,0 +1,30 @@
+.container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  .title {
+    font-family: "FTCalhernTrial-Book";
+    color: white;
+    padding-top: 50px;
+  }
+  .connectedContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    .connectedText {
+      color: white;
+    }
+  }
+  .connectButton,
+  .disconnectButton {
+    width: 400px;
+    height: 48px;
+    background-color: #89d6fb;
+    border-radius: 25px;
+    border: none;
+    text-align: center;
+    transition: all 0.5s;
+    cursor: pointer;
+  }
+}

@@ -1,3 +1,11 @@
+<<<<<<< HEAD
+[submodule "contracts/lib/openzeppelin-contracts"]
+	path = contracts/lib/openzeppelin-contracts
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+[submodule "contracts/lib/axelar-gmp-sdk-solidity"]
+	path = contracts/lib/axelar-gmp-sdk-solidity
+	url = https://github.com/axelarnetwork/axelar-gmp-sdk-solidity
+=======
 [submodule "contracts/lib/periphery-next"]
 	path = contracts/lib/periphery-next
 	url = https://github.com/Uniswap/periphery-next
@@ -7,3 +15,4 @@
 [submodule "contracts/lib/forge-gas-snapshot"]
 	path = contracts/lib/forge-gas-snapshot
 	url = https://github.com/marktoda/forge-gas-snapshot
+>>>>>>> origin

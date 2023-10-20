@@ -1,0 +1,38 @@
+.container {
+  display: flex;
+  justify-content: space-between;
+  font-family: "FTCalhernTrial-Book";
+  color: white;
+  padding: 5px;
+  height: 40px;
+  align-items: center;
+  border-bottom: 1px solid #89d6fb;
+  .flex {
+    display: flex;
+    align-items: center;
+    gap: 50px;
+    color: #d4f0fc;
+    .links {
+      display: flex;
+      gap: 50px;
+      cursor: pointer;
+    }
+  }
+  .disconnectButton {
+    width: 100px;
+    height: 25px;
+    background-color: #89d6fb;
+    border-radius: 25px;
+    border: none;
+    text-align: center;
+    transition: all 0.5s;
+    cursor: pointer;
+  }
+  .protect {
+    color: #d4f0fc;
+    cursor: pointer;
+  }
+  .attack {
+    color: #02a9f7;
+  }
+}
