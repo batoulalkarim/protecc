@@ -1,0 +1,21 @@
+@font-face {
+	font-family: 'FTCalhernTrial-Regular';
+	src: url('/fonts/FTCalhernTrial-Regular.otf');
+	font-style: normal;
+	font-weight: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'FTCalhernTrial-Book';
+	src: url('/fonts/FTCalhernTrial-Book.otf');
+	font-style: normal;
+	font-weight: normal;
+	font-display: swap;
+}
+
+body {
+	margin: 0;
+	padding: 0;
+	background-color: black;
+}
