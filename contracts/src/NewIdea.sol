@@ -250,7 +250,9 @@ contract NewIdea is BaseHook {
     ) private returns (uint256 shares, uint256 assets) {
         // NOTE: UPDATE THIS FUNCTION
 
-        shares = savingsDai.maxWithdraw(
+        shares = savingsDai.withdraw(
+            sDaiAmount,
+            address(this), // receiver
             address(this) // owner
         );
         // Need to figure out if this is the best way to do it... seems lazy
