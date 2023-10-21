@@ -15,7 +15,7 @@ Attacc is a Uniswap V4 hook that allows developers and builders to create liquid
 #### Pools paired with DAI
 
 1. Spark has a yield bearing stablecoin called Savings sDAI (sDAI). Any DAI deposited into this hook can earn yield as sDAI.
-2. As users make swaps, the tick of the pool changes. That means that a different portion of the DAI (and other token) deposited is active for traders to use to swap. When this is true, we need to keep some DAI available for traders. The rest can earn yield as sDAI.
+2. As users make swaps, the range of active liquidity can change. That means that a different portion of the DAI deposited is active for traders to use to swap. Since this is true, we need to keep some DAI available for traders. The rest can earn yield as sDAI.
 3. We use hooks in Uniswap V4 to update the sDAI and DAI balances of this contract based on tick changes and liquidity. The hooks implemented are `afterInitiaze`, `afterSwap`, and `beforeModifyPosition` and `afterModifyPosition`.
 
 #### NFTs as identifiers
