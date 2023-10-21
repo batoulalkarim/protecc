@@ -8,20 +8,15 @@ Create pools on Uniswap V4 and automatically use Spark Protocol to maximize yiel
 
 ## Overview
 
-Attacc is a Uniswap V4 hook that allows developers and builders to create liquidity pools that automatically leverage Spark Protocol's sDAI. Hooks can enable liquidity providers to earn yield on their liquidity if the pools are created with ETH or DAI.
+Attacc is a Uniswap V4 hook that allows developers and builders to create liquidity pools that automatically leverage Spark Protocol's sDAI and SparkLend. Hooks can enable liquidity providers to earn yield on their liquidity if the pools are created with ETH or DAI.
 
 ### Context
 
-#### Pools paired with ETH
-
-1. Spark has a lending protocol called SparkLend. Any ETH deposited into this hook will be used in SparkLend. When the ETH is deposited into SparkLend, the protocol will borrow sDAI / DAI. The borrowed collateral stays as float in the protocol.
-2. <>
-3. <>
-
 #### Pools paired with DAI
 
-1. Spark has a yield bearing stablecoin called Spark sDAI (sDAI). Any DAI deposited into this hook will be swapped for sDAI.
-2. When this hook is used to swap from the other token into DAI, the hook swaps the pool's sDAI into DAI and sends an amount to the user. The excess DAI (yield generated) will go to the liquidity provider.
+1. Spark has a yield bearing stablecoin called Savings sDAI (sDAI). Any DAI deposited into this hook can earn yield as sDAI.
+2. As users make swaps, the tick of the pool changes. That means that a different portion of the DAI (and other token) deposited is active for traders to use to swap. When this is true, we need to keep some DAI available for traders. The rest can earn yield as sDAI.
+3. We use hooks in Uniswap V4 to update the sDAI and DAI balances of this contract based on tick changes and liquidity. The hooks implemented are `afterInitiaze`, `afterSwap`, and `beforeModifyPosition` and `afterModifyPosition`.
 
 ### Benefits
 
@@ -51,7 +46,7 @@ To use this hook:
 
 ### Todo
 
--   [ ]
+-   [ ] Handle ETH pools (Spark has a lending protocol called SparkLend. Any ETH deposited into this hook will be used in SparkLend. When the ETH is deposited into SparkLend, the protocol will borrow sDAI / DAI. The borrowed collateral stays as float in the protocol.)
 
 ### License
 
