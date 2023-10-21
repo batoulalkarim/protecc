@@ -37,8 +37,10 @@ Attacc is a Uniswap V4 hook that allows developers and builders to create liquid
 
 To use this hook:
 
-1. <>
-2. <>
+1. Deploy `NewIdea` hook on mainnet
+2. Create a pool with the hook with ETH and DAI
+3. Once the pool is ready, add liquidity (in ETH and DAI) at various ranges
+4. Deploy the `NFT` on the Scroll network
 
 ### Deployment
 
