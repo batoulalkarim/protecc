@@ -9,6 +9,7 @@ import {PoolKey} from "@uniswap/v4-core/contracts/types/PoolKey.sol";
 import {CurrencyLibrary, Currency} from "@uniswap/v4-core/contracts/types/Currency.sol";
 import {BalanceDelta} from "@uniswap/v4-core/contracts/types/BalanceDelta.sol";
 import {TickMath} from "@uniswap/v4-core/contracts/libraries/TickMath.sol";
+import {Pool} from "@uniswap/v4-core/contracts/libraries/Pool.sol";
 
 // Interafces
 import {IPoolManager} from "@uniswap/v4-core/contracts/interfaces/IPoolManager.sol";
@@ -27,15 +28,9 @@ contract NewIdea is BaseHook {
     // Which means we'll have a balance of sDAI and a balance of DAI
     // Need to check the ticks at every swap to see what the deal is and
     // based on that, convert the sDAI to DAI or vice versa
-
+    using Pool for *;
     using PoolIdLibrary for PoolKey;
     using CurrencyLibrary for Currency;
-
-    // If the pool is in this range, ensure we have enough dai to trade
-    mapping(PoolId poolId => int24 tickLower) public tickLowerLast;
-    mapping(PoolId poolId => int24 tickUpper) public tickUpperLast;
-
-    uint256 public constant PRECISION = 1e18;
 
     ISavingsDai public immutable savingsDai =
         ISavingsDai(0x83F20F44975D03b1b09e64809B757c47f942BEeA);
@@ -59,85 +54,85 @@ contract NewIdea is BaseHook {
             });
     }
 
-    function _setTickLowerLast(PoolId poolId, int24 tickLower) private {
-        tickLowerLast[poolId] = tickLower;
-    }
+    function _handleLiquidityPositions(
+        PoolKey calldata key
+    ) private returns (uint256 amount0, uint256 amount1) {
+        uint256 minDaiRequired;
+        uint256 balanceDai = dai.balanceOf(address(this));
 
-    function _setTickHigherLast(PoolId poolId, int24 tickUpper) private {
-        tickUpperLast[poolId] = tickUpper;
-    }
+        (, int24 tick, , ) = poolManager.getSlot0(key.toId());
+        uint128 liquidity = poolManager.getLiquidity(key.toId());
+        // Calculate amount for dai and token
+        int24 tickLower = calculateTickLower(tick, key.tickSpacing);
+        int24 tickUpper = calculateTickUpper(tick, key.tickSpacing);
 
-    function _getTickLower(
-        int24 actualTick,
-        int24 tickSpacing
-    ) private pure returns (int24) {
-        int24 intervals = actualTick / tickSpacing;
-        if (actualTick < 0 && (actualTick % tickSpacing != 0)) {
-            intervals--;
+        uint160 sqrtPriceAX96 = TickMath.getSqrtRatioAtTick(tickLower);
+        uint160 sqrtPriceBX96 = TickMath.getSqrtRatioAtTick(tickUpper);
+        uint160 sqrtPriceCurrentX96 = TickMath.getSqrtRatioAtTick(tick);
+
+        if (tick < tickLower) {
+            amount0 =
+                (uint256(liquidity) * (sqrtPriceBX96 - sqrtPriceAX96)) >>
+                96;
+        } else if (tick >= tickLower && tick < tickUpper) {
+            amount0 =
+                (uint256(liquidity) * (sqrtPriceBX96 - sqrtPriceCurrentX96)) >>
+                96;
+            amount1 =
+                (uint256(liquidity) * (sqrtPriceCurrentX96 - sqrtPriceAX96)) >>
+                96;
+        } else if (tick >= tickUpper) {
+            amount1 =
+                (uint256(liquidity) * (sqrtPriceBX96 - sqrtPriceAX96)) >>
+                96;
         }
 
-        return intervals * tickSpacing;
-    }
-
-    function _getTickUpper(
-        int24 actualTick,
-        int24 tickSpacing
-    ) private pure returns (int24) {
-        int24 intervals = actualTick / tickSpacing;
-        if (actualTick >= 0 && (actualTick % tickSpacing != 0)) {
-            intervals++;
+        if ((key.currency0) == Currency.wrap((address(dai)))) {
+            minDaiRequired = amount0;
+        } else {
+            minDaiRequired = amount1;
         }
 
-        return intervals * tickSpacing;
+        if (minDaiRequired >= balanceDai) {
+            // Convert sDai to dai because more is needed for the trade
+            _makeDaiAvail(minDaiRequired - balanceDai);
+        } else if (minDaiRequired < balanceDai) {
+            // Convert some back to sDai and earn yield
+            _makeSavingsDai(balanceDai - minDaiRequired);
+        }
     }
 
-    function _calculateIntervals(
-        int24 tickLower,
-        int24 tickUpper,
+    function calculateTickLower(
+        int24 actualTick,
         int24 tickSpacing
-    ) private pure returns (int24) {
-        require(tickSpacing > 0, "tickSpacing should be positive");
-        require(
-            tickUpper >= tickLower,
-            "tickUpper should be greater than or equal to tickLower"
-        );
-
-        int24 intervals = (tickUpper - tickLower) / tickSpacing;
-
-        return intervals;
+    ) public pure returns (int24) {
+        int24 tickLowerMultiple = actualTick / tickSpacing;
+        if (actualTick < 0 && actualTick % tickSpacing != 0) {
+            tickLowerMultiple = tickLowerMultiple - 1; // Implementing floor function for negative numbers
+        }
+        return tickLowerMultiple * tickSpacing;
     }
 
-    function _calculateRatio(
-        int24 currentIntervals,
-        int24 maxIntervals
-    ) private pure returns (uint256) {
-        // Note: add checks
-
-        uint256 ratio = (int24ToUint256(currentIntervals) * PRECISION) /
-            int24ToUint256(maxIntervals);
-
-        return ratio;
-    }
-
-    function int24ToUint256(int24 value) public pure returns (uint256) {
-        require(value >= 0, "Cannot convert negative int24 to uint256");
-
-        // Convert int24 to int256 first
-        int256 intermediateValue = int256(value);
-
-        // Then convert int256 to uint256
-        return uint256(intermediateValue);
+    // Calculate the tickUpper given the actualTick and tickSpacing
+    function calculateTickUpper(
+        int24 actualTick,
+        int24 tickSpacing
+    ) public pure returns (int24) {
+        int24 tickUpperMultiple = actualTick / tickSpacing;
+        if (actualTick >= 0 && actualTick % tickSpacing != 0) {
+            tickUpperMultiple = tickUpperMultiple + 1; // Implementing ceiling function for positive numbers
+        }
+        return tickUpperMultiple * tickSpacing;
     }
 
     function afterInitialize(
         address,
         PoolKey calldata key,
         uint160,
-        int24 tick,
+        int24,
         bytes calldata
     ) external override returns (bytes4) {
-        _setTickLowerLast(key.toId(), _getTickLower(tick, key.tickSpacing));
-        _setTickHigherLast(key.toId(), _getTickUpper(tick, key.tickSpacing));
+        _handleLiquidityPositions(key);
         return BaseHook.afterInitialize.selector;
     }
 
@@ -148,68 +143,7 @@ contract NewIdea is BaseHook {
         BalanceDelta,
         bytes calldata
     ) external override returns (bytes4) {
-        int24 lastTickLower = tickLowerLast[key.toId()];
-        int24 lastTickUpper = tickUpperLast[key.toId()];
-        (, int24 currentTick, , ) = poolManager.getSlot0(key.toId());
-        int24 currentTickLower = _getTickLower(currentTick, key.tickSpacing);
-        int24 currentTickUpper = _getTickUpper(currentTick, key.tickSpacing);
-
-        int24 intervalsCurrent = _calculateIntervals(
-            currentTickLower,
-            currentTickUpper,
-            key.tickSpacing
-        );
-        int24 intervalsMax = _calculateIntervals(
-            TickMath.MIN_TICK,
-            TickMath.MAX_TICK,
-            key.tickSpacing
-        );
-
-        uint256 ratio = _calculateRatio(intervalsCurrent, intervalsMax);
-        uint256 daiBalance = dai.balanceOf(address(this));
-        uint256 sDaiBalance = savingsDai.balanceOf(address(this));
-
-        // Lazy
-        uint256 totalDai = daiBalance + sDaiBalance;
-        uint256 targetSDai = (totalDai * ratio) / PRECISION;
-
-        // Need to handle ticks that are the same (current versus last)
-
-        if (
-            currentTickLower < lastTickLower && currentTickUpper > lastTickUpper
-        ) {
-            // Need to convert sdai back to dai ONLY
-            _makeDaiAvail(targetSDai - sDaiBalance);
-        }
-
-        if (
-            (currentTickLower < lastTickLower &&
-                currentTickUpper < lastTickUpper) ||
-            (currentTickLower > lastTickLower &&
-                currentTickUpper > lastTickUpper) ||
-            (currentTickLower == lastTickLower &&
-                currentTickUpper > lastTickUpper) ||
-            (currentTickLower < lastTickLower &&
-                currentTickUpper == lastTickUpper)
-        ) {
-            // Left increasing, right are decreasing
-            if (targetSDai > sDaiBalance) {
-                _makeDaiAvail(targetSDai - sDaiBalance);
-            }
-        }
-
-        if (
-            (currentTickLower > lastTickLower &&
-                currentTickUpper < lastTickUpper) ||
-            (currentTickLower == lastTickLower &&
-                currentTickUpper < lastTickUpper) ||
-            (currentTickLower > lastTickLower &&
-                currentTickUpper == lastTickUpper)
-        ) {
-            // Need to convert
-            _makeSavingsDai(sDaiBalance - targetSDai);
-        }
-
+        _handleLiquidityPositions(key);
         return BaseHook.afterSwap.selector;
     }
 
@@ -231,19 +165,13 @@ contract NewIdea is BaseHook {
 
     function afterModifyPosition(
         address,
-        PoolKey calldata,
+        PoolKey calldata key,
         IPoolManager.ModifyPositionParams calldata,
         BalanceDelta,
         bytes calldata
     ) external override returns (bytes4) {
         // NOTE: UPDATE THIS FUNCTION
-
-        // There is either less or more dai
-        // Now convert everything back to savings dai
-
-        // They are adding removing liquidity
-        // Need to do the check to see how much liquidity impacts ticks
-        // and then convert some dai to sDai (or opposite)
+        _handleLiquidityPositions(key);
 
         return BaseHook.afterModifyPosition.selector;
     }
@@ -252,23 +180,14 @@ contract NewIdea is BaseHook {
     // more liquidity is required to make trades
     function _makeDaiAvail(
         uint256 sDaiAmount
-    ) private returns (uint256 shares, uint256 assets) {
-        // NOTE: UPDATE THIS FUNCTION
-
-        shares = savingsDai.withdraw(
-            sDaiAmount,
-            address(this), // receiver
-            address(this) // owner
-        );
-        // Need to figure out if this is the best way to do it... seems lazy
+    ) private returns (uint256 assets) {
+        uint256 sDaiBalance = savingsDai.balanceOf(address(this));
+        require(sDaiBalance >= sDaiAmount, "Not enough sDAI");
         assets = savingsDai.redeem(
-            shares,
+            sDaiAmount,
             address(this), // reciever
             address(this) // owner
         );
-        // Ideally should only make the DAI that is being deposited available
-        // so that the price of the paired token does not get skewed incorrectly
-        // Note: When we redeem, we should isolate deposited DAI and earned DAI
     }
 
     /// @notice Function takes in a specific amount of dai now and converts to sdai
