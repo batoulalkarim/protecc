@@ -11,6 +11,10 @@ import {IERC20} from "axelar-gmp-sdk-solidity/interfaces/IERC20.sol";
 
 contract NFT is ERC721, ERC721URIStorage, Ownable, AxelarExecutable {
     uint256 private _nextTokenId;
+    string public value;
+    string public sourceChain;
+    string public sourceAddress;
+    IAxelarGasService public immutable gasService;
 
     constructor(
         address initialOwner,
