@@ -167,7 +167,11 @@ contract NewIdea is BaseHook {
 
         uint256 ratio = _calculateRatio(intervalsCurrent, intervalsMax);
         uint256 daiBalance = dai.balanceOf(address(this));
-        uint256 sdaiBalance = savingsDai.balanceOf(address(this));
+        uint256 sDaiBalance = savingsDai.balanceOf(address(this));
+
+        // Lazy
+        uint256 totalDai = daiBalance + sDaiBalance;
+        uint256 targetSDai = (totalDai * ratio) / PRECISION;
 
         // Need to handle ticks that are the same (current versus last)
 
@@ -175,54 +179,35 @@ contract NewIdea is BaseHook {
             currentTickLower < lastTickLower && currentTickUpper > lastTickUpper
         ) {
             // Need to convert sdai back to dai ONLY
+            _makeDaiAvail(targetSDai - sDaiBalance);
         }
 
         if (
-            currentTickLower < lastTickLower && currentTickUpper < lastTickUpper
+            (currentTickLower < lastTickLower &&
+                currentTickUpper < lastTickUpper) ||
+            (currentTickLower > lastTickLower &&
+                currentTickUpper > lastTickUpper) ||
+            (currentTickLower == lastTickLower &&
+                currentTickUpper > lastTickUpper) ||
+            (currentTickLower < lastTickLower &&
+                currentTickUpper == lastTickUpper)
         ) {
             // Left increasing, right are decreasing
+            if (targetSDai > sDaiBalance) {
+                _makeDaiAvail(targetSDai - sDaiBalance);
+            }
         }
 
         if (
-            currentTickLower > lastTickLower && currentTickUpper > lastTickUpper
-        ) {}
-
-        if (
-            currentTickLower > lastTickLower && currentTickUpper < lastTickUpper
+            (currentTickLower > lastTickLower &&
+                currentTickUpper < lastTickUpper) ||
+            (currentTickLower == lastTickLower &&
+                currentTickUpper < lastTickUpper) ||
+            (currentTickLower > lastTickLower &&
+                currentTickUpper == lastTickUpper)
         ) {
-            // Need take out of range DAI and convert to sdai ONLY
-        }
-
-        if (
-            currentTickLower == lastTickLower &&
-            currentTickUpper > lastTickUpper
-        ) {
-            // Left is the same, right is different
-        }
-
-        if (
-            currentTickLower == lastTickLower &&
-            currentTickUpper > lastTickUpper
-        ) {
-            // Increasing
-        }
-        if (
-            currentTickLower < lastTickLower &&
-            currentTickUpper == lastTickUpper
-        ) {
-            // Increasing
-        }
-        if (
-            currentTickLower == lastTickLower &&
-            currentTickUpper < lastTickUpper
-        ) {
-            // Decreasing
-        }
-        if (
-            currentTickLower > lastTickLower &&
-            currentTickUpper == lastTickUpper
-        ) {
-            // Decreasing
+            // Need to convert
+            _makeSavingsDai(sDaiBalance - targetSDai);
         }
 
         return BaseHook.afterSwap.selector;
@@ -234,6 +219,7 @@ contract NewIdea is BaseHook {
         IPoolManager.ModifyPositionParams calldata params,
         bytes calldata
     ) external override returns (bytes4) {
+        // NOTE: UPDATE THIS FUNCTION
         if (params.liquidityDelta < 0) {
             // They are removing liquidity
             // Make DAI available and let them remove
@@ -249,6 +235,8 @@ contract NewIdea is BaseHook {
         BalanceDelta,
         bytes calldata
     ) external override returns (bytes4) {
+        // NOTE: UPDATE THIS FUNCTION
+
         // There is either less or more dai
         // Now convert everything back to savings dai
 
@@ -257,7 +245,11 @@ contract NewIdea is BaseHook {
 
     /// @notice Function takes a specific amount of sdai and converts to dai because
     // more liquidity is required to make trades
-    function _makeDaiAvail() private returns (uint256 shares, uint256 assets) {
+    function _makeDaiAvail(
+        uint256 sDaiAmount
+    ) private returns (uint256 shares, uint256 assets) {
+        // NOTE: UPDATE THIS FUNCTION
+
         shares = savingsDai.maxWithdraw(
             address(this) // owner
         );
