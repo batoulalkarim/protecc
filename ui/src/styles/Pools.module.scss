@@ -1,3 +1,146 @@
 .container {
   color: white;
+  .title {
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+    font-size: 18px;
+  }
+  .subtitle {
+    display: flex;
+    justify-content: center;
+    padding-bottom: 10px;
+    text-decoration: underline;
+    color: rgb(123, 123, 216);
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .contentContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    .content {
+      border: 1px solid rgb(45, 44, 44);
+      border-radius: 25px;
+      padding: 20px;
+      max-width: 400px;
+      .header {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 0 0 20px 0;
+      }
+      .tipMessage {
+        padding: 1px 15px;
+        background-color: rgb(51, 7, 51);
+        color: rgb(195, 118, 207);
+        border-radius: 20px;
+        .message {
+          line-height: 25px;
+          .bold {
+            font-weight: bolder;
+          }
+        }
+      }
+      .liquiditycontainer {
+        padding: 10px 0;
+        .daiContainer {
+          background-color: rgb(34, 33, 33);
+          border: 1px solid rgb(45, 44, 44);
+          border-radius: 20px;
+          display: flex;
+          justify-content: space-between;
+          .left {
+            padding: 10px;
+            .input {
+              padding: 10px 0 0 10px;
+              background-color: black;
+              width: 100px;
+              font-size: 24px;
+              border: none;
+              background-color: rgb(34, 33, 33);
+            }
+          }
+          .right {
+            padding: 10px 5px;
+            font-size: 14px;
+            .daiSelect {
+              display: flex;
+              justify-content: center;
+              .daiBG {
+                width: 100px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 15px;
+                background-color: rgb(25, 24, 24);
+                border-radius: 20px;
+                padding: 0px;
+                font-size: 24px;
+                .dai {
+                  max-width: 25px;
+                  height: 25px;
+                }
+              }
+            }
+          }
+        }
+        .plus {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: grey;
+          font-size: 18px;
+        }
+        .otherContainer {
+          background-color: rgb(34, 33, 33);
+          border: 1px solid rgb(45, 44, 44);
+          border-radius: 20px;
+          display: flex;
+          justify-content: space-between;
+          .left {
+            padding: 10px;
+            .input {
+              padding: 10px 0 0 10px;
+              background-color: black;
+              width: 100px;
+              font-size: 24px;
+              border: none;
+              background-color: rgb(34, 33, 33);
+            }
+          }
+          .right {
+            padding: 15px;
+            .selectContainer {
+              padding: 0px 25px;
+              background-color: rgb(215, 58, 200);
+              border-radius: 20px;
+              font-size: 18px;
+              display: flex;
+              align-items: center;
+              height: 40px;
+              cursor: pointer;
+              .downArrow {
+                max-width: 18px;
+                height: 18px;
+                transform: translateX(2px) translateY(3px);
+              }
+            }
+          }
+        }
+      }
+      .button {
+        background-color: rgb(34, 33, 33);
+        border: 1px solid rgb(45, 44, 44);
+        border-radius: 20px;
+        display: flex;
+        font-size: 20px;
+        color: grey;
+        align-items: center;
+        height: 60px;
+        justify-content: center;
+      }
+    }
+  }
 }

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useAccount } from "wagmi";
 import { useRouter } from "next/router";
 import { ArrowDown } from "styled-icons/ionicons-outline";
-
+import React from "react";
 import styles from "../../styles/Trade.module.scss";
 import { styled } from "styled-components";
 import { Button } from "../Button";

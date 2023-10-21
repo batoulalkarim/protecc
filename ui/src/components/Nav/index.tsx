@@ -1,8 +1,10 @@
+// @ts-ignore
 import styles from "../../styles/Nav.module.scss";
 import { useAccount, useDisconnect } from "wagmi";
 import { useRouter } from "next/router";
+import React from "react";
 
-export default function Nav() {
+const Nav = () => {
   const router = useRouter();
   const { address } = useAccount();
   const { disconnect } = useDisconnect();
@@ -34,4 +36,6 @@ export default function Nav() {
       )}
     </div>
   );
-}
+};
+
+export default Nav;
