@@ -32,11 +32,11 @@ contract NFT is ERC721, ERC721URIStorage, Ownable, AxelarExecutable {
         return "https://www.google.com";
     }
 
-    // function safeMint(address to, string memory uri) public onlyOwner {
-    //     uint256 tokenId = _nextTokenId++;
-    //     _safeMint(to, tokenId);
-    //     _setTokenURI(tokenId, uri);
-    // }
+    function safeMint(address to, string memory uri) public onlyOwner {
+        uint256 tokenId = _nextTokenId++;
+        _safeMint(to, tokenId);
+        _setTokenURI(tokenId, uri);
+    }
 
     // The following functions are overrides required by Solidity.
 
