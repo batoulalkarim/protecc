@@ -222,8 +222,9 @@ contract NewIdea is BaseHook {
         // NOTE: UPDATE THIS FUNCTION
         if (params.liquidityDelta < 0) {
             // They are removing liquidity
-            // Make DAI available and let them remove
-            _makeDaiAvail(1);
+            // Ensure that there is enough liquidity (if not... then)
+            // convert some sDai to dai
+            // Need to figure out how to send rewards to the users too
         }
         return BaseHook.beforeModifyPosition.selector;
     }
@@ -239,6 +240,10 @@ contract NewIdea is BaseHook {
 
         // There is either less or more dai
         // Now convert everything back to savings dai
+
+        // They are adding removing liquidity
+        // Need to do the check to see how much liquidity impacts ticks
+        // and then convert some dai to sDai (or opposite)
 
         return BaseHook.afterModifyPosition.selector;
     }
