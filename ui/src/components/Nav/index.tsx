@@ -15,7 +15,7 @@ export default function Nav() {
               Protecc Yourself
             </div>
             <div className={styles.links}>
-              <p onClick={() => router.push("/profile")}>Profile</p>
+              <p onClick={() => router.push("/profile")}>Portfolio</p>
               <p onClick={() => router.push("/pools")}>Pools</p>
             </div>
           </div>
