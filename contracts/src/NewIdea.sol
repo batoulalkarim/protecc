@@ -223,7 +223,7 @@ contract NewIdea is BaseHook {
         if (params.liquidityDelta < 0) {
             // They are removing liquidity
             // Make DAI available and let them remove
-            _makeDaiAvail();
+            _makeDaiAvail(1);
         }
         return BaseHook.beforeModifyPosition.selector;
     }
