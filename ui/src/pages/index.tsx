@@ -4,9 +4,14 @@ import Image from 'next/image'
 import { Inter } from 'next/font/google'
 import { LoginSteps } from '../components/LoginSteps'
 const inter = Inter({ subsets: ['latin'] })
+import { useRouter } from 'next/router'
+import { useAccount } from 'wagmi'
 
 export default function Home() {
 	// Check if the current chain is either Scroll Sepolia or Polygon zkEVM testnet
+
+	const router = useRouter()
+	const { address } = useAccount()
 
 	return (
 		<>
