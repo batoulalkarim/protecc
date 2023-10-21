@@ -18,6 +18,10 @@ Attacc is a Uniswap V4 hook that allows developers and builders to create liquid
 2. As users make swaps, the tick of the pool changes. That means that a different portion of the DAI (and other token) deposited is active for traders to use to swap. When this is true, we need to keep some DAI available for traders. The rest can earn yield as sDAI.
 3. We use hooks in Uniswap V4 to update the sDAI and DAI balances of this contract based on tick changes and liquidity. The hooks implemented are `afterInitiaze`, `afterSwap`, and `beforeModifyPosition` and `afterModifyPosition`.
 
+#### NFTs as identifiers
+
+1. We are using Axelar and a simple NFT contract to capture liquidity positions in our Uniswap V4 hook. To save on gas costs, we deployed the NFT on Scroll network. Whenever a user adds / removes liquidity, we create a simple NFT for them on the Scroll network with Axelar messaging.
+
 ### Benefits
 
 1. Users can earn additional yield on their liquidity (instead of only having their liquidity earn yield when users are making trades).
