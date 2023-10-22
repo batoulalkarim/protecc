@@ -53,6 +53,7 @@ forge script script/Protecc.s.sol \
  --rpc-url $ETH_URL \
  --private-key $PK \
  --broadcast
+# Need to add details re. the run inputs (token address, pool manager (once deployed on mainnet), and destination address (whcih is the token above on scroll network))
 ```
 
 ### Bonus
