@@ -10,6 +10,7 @@ import {CurrencyLibrary, Currency} from "@uniswap/v4-core/contracts/types/Curren
 import {BalanceDelta} from "@uniswap/v4-core/contracts/types/BalanceDelta.sol";
 import {TickMath} from "@uniswap/v4-core/contracts/libraries/TickMath.sol";
 import {Pool} from "@uniswap/v4-core/contracts/libraries/Pool.sol";
+import {Position} from "@uniswap/v4-core/contracts/libraries/Position.sol";
 
 // Interafces
 import {IPoolManager} from "@uniswap/v4-core/contracts/interfaces/IPoolManager.sol";
@@ -96,10 +97,44 @@ contract NewIdea is BaseHook {
     }
 
     function _ensureAmountsForModifyPosition(
+        address sender,
         PoolKey calldata key,
-        uint256 liquidityDelta
+        int24 tickLower,
+        int24 tickUpper
     ) private {
-        // Use this function to leveage make sdai or make dai avail
+        // Need to call getPosition
+        // Need pool id, owner, tickLower, tickUpper
+        uint256 daiNeededForPosition;
+        Position.Info memory position = poolManager.getPosition(
+            key.toId(),
+            sender,
+            tickLower,
+            tickUpper
+        );
+        uint128 liquidity = position.liquidity;
+        (, int24 tick, , ) = poolManager.getSlot0(key.toId());
+        uint160 sqrtPriceAX96 = TickMath.getSqrtRatioAtTick(tickLower);
+        uint160 sqrtPriceBX96 = TickMath.getSqrtRatioAtTick(tickUpper);
+        uint160 sqrtPriceCurrentX96 = TickMath.getSqrtRatioAtTick(tick);
+        (uint256 amount0, uint256 amount1) = _calculateAmounts(
+            tick,
+            tickLower,
+            tickUpper,
+            sqrtPriceAX96,
+            sqrtPriceBX96,
+            sqrtPriceCurrentX96,
+            liquidity
+        );
+        if ((key.currency0) == Currency.wrap((address(dai)))) {
+            daiNeededForPosition = amount0;
+        } else {
+            daiNeededForPosition = amount1;
+        }
+        uint256 balanceDai = dai.balanceOf(address(this));
+        if (daiNeededForPosition > balanceDai) {
+            // Convert sDai to dai because more is needed for the trade
+            _makeDaiAvail(daiNeededForPosition - balanceDai);
+        }
     }
 
     function _calculateTickLower(
@@ -175,14 +210,19 @@ contract NewIdea is BaseHook {
     }
 
     function beforeModifyPosition(
-        address,
+        address sender,
         PoolKey calldata key,
         IPoolManager.ModifyPositionParams calldata params,
         bytes calldata
     ) external override returns (bytes4) {
         // NOTE: UPDATE THIS FUNCTION
         if (params.liquidityDelta < 0) {
-            _ensureAmountsForModifyPosition(key, params.liquidityDelta);
+            _ensureAmountsForModifyPosition(
+                sender,
+                key,
+                params.tickLower,
+                params.tickUpper
+            );
             // They are removing liquidity
             // Ensure that there is enough liquidity (if not... then)
             // convert some sDai to dai
