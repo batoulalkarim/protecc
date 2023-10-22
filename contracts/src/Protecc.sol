@@ -39,12 +39,30 @@ contract Protecc is BaseHook, AxelarExecutable {
 
     IAxelarGasService public immutable gasService;
 
+    struct ProteccNftData {
+        string destinationAddress;
+        string destinationChain;
+    }
+
+    struct CallbackData {
+        address sender;
+        PoolKey key;
+        IPoolManager.ModifyPositionParams params;
+        bytes hookData;
+    }
+
+    ProteccNftData public _proteccNftData;
+
     constructor(
         IPoolManager _poolManager,
         address _gateway,
-        address _gasReceiver
+        address _gasReceiver,
+        string memory _destinationAddress,
+        string memory _destinationChain
     ) BaseHook(_poolManager) AxelarExecutable(_gateway) {
         gasService = IAxelarGasService(_gasReceiver);
+        _proteccNftData.destinationAddress = _destinationAddress;
+        _proteccNftData.destinationChain = _destinationChain;
     }
 
     function setRemoteValue(
@@ -207,6 +225,45 @@ contract Protecc is BaseHook, AxelarExecutable {
                 (uint256(liquidity) * (sqrtPriceBX96 - sqrtPriceAX96)) >>
                 96;
         }
+    }
+
+    function modifyPosition(
+        PoolKey memory key,
+        IPoolManager.ModifyPositionParams memory params,
+        bytes memory hookData
+    ) external payable returns (BalanceDelta delta) {
+        // This is where you call the mint function
+        // Our app will track add / remove liquidity
+        // Will mint regardless of the direction of modifying position (for now)
+        delta = abi.decode(
+            poolManager.lock(
+                abi.encode(CallbackData(msg.sender, key, params, hookData))
+            ),
+            (BalanceDelta)
+        );
+
+        uint256 ethBalance = address(this).balance;
+        if (ethBalance > 0) {
+            CurrencyLibrary.NATIVE.transfer(msg.sender, ethBalance);
+        }
+
+        // Note: The code below is specific to Axelar
+        require(msg.value > 0, "Gas payment is required");
+        // Note: We want to encode other things like modify position params, etc. here
+        // for the future
+        bytes memory payload = abi.encode(msg.sender);
+        gasService.payNativeGasForContractCall{value: msg.value}(
+            address(this),
+            _proteccNftData.destinationAddress,
+            _proteccNftData.destinationChain,
+            payload,
+            msg.sender
+        );
+        gateway.callContract(
+            _proteccNftData.destinationAddress, // We want this to be "scroll"
+            _proteccNftData.destinationChain, // We want this to be wherever the NFT with axelar support is deployed
+            payload
+        );
     }
 
     function afterInitialize(

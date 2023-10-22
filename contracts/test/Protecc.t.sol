@@ -44,7 +44,13 @@ contract ProteccTest is HookTest, Deployers, GasSnapshot {
             abi.encode(address(manager))
         );
 
-        hook = new Protecc{salt: salt}(manager, address(0), address(1));
+        hook = new Protecc{salt: salt}(
+            manager,
+            address(0),
+            address(1),
+            "",
+            "scroll"
+        );
 
         require(
             address(hook) == hookAddress,
@@ -55,6 +61,8 @@ contract ProteccTest is HookTest, Deployers, GasSnapshot {
             manager,
             address(0), // Related to Axelar
             address(1), // Related to Axelar
+            "", // Related to Axelar
+            "scroll", // Related to Axelar
             hook
         );
         HookTest.etchHook(address(impl), address(hook));

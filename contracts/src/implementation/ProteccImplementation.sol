@@ -12,8 +12,18 @@ contract ProteccImplementation is Protecc {
         IPoolManager manager,
         address gateway,
         address gasReceiver,
+        string memory destinationAddress,
+        string memory destinationChain,
         Protecc addressToEtch
-    ) Protecc(manager, gateway, gasReceiver) {
+    )
+        Protecc(
+            manager,
+            gateway,
+            gasReceiver,
+            destinationAddress,
+            destinationChain
+        )
+    {
         Hooks.validateHookAddress(addressToEtch, getHooksCalls());
     }
 

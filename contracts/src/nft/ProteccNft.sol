@@ -60,6 +60,4 @@ contract ProteccNft is ERC721, ERC721URIStorage, Ownable, AxelarExecutable {
         uint256 tokenId = _nextTokenId++;
         _safeMint(recipient, tokenId);
     }
-
-    // Functions from AddressValidator
 }
