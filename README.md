@@ -30,8 +30,10 @@ Protecc is a Uniswap V4 hook that allows developers and builders to create liqui
 
 ### Mechanism
 
-1. Hooks used:
-2. Deployment is outlined in `script/`
+1. Before Modify Position Hook - when a user wants to remove liquidity, there might not be enough DAI in the hook since some of the DAI is stored as sDAI. We call `_ensureAmountsForModifyPosition` to unwind some sDAI for the user (if necessary) and then the user can exit the pool with ease for the range specified.
+2. After Modify Position Hook - since liquidity is being added or removed, the ticks will change. When ticks of the hook change, that means the active liquidity changes too. We call `_handleLiquidityPositions` to review the balances of DAI and sDAI to ensure that the active liquidity range has the correct amount of DAI so people can trade.
+3. After Swap Hook - once the trade occurs, the ticks will change again. We call `_handleLiquidityPositions` once more to ensure that that only the DAI required for the active tick range will be available for trade and the rest will be earning yield as sDAI.
+4. We have our own `modifyPosition` function because we want to use NFTs on Scroll network to capture the `ModifyPositionParams` for users. This will be used to calculate how much sDAI yield can be allocated for a user. We use Axelar to send a message to their mainnet contract and this message tells Axelar to relay a message to an NFT contract (that we deployed) on Scroll network and mint an NFT with the relevant `ModifyPositionParams` details.
 
 ### Deployment
 
@@ -53,6 +55,7 @@ forge script script/Protecc.s.sol \
  --rpc-url $ETH_URL \
  --private-key $PK \
  --broadcast
+
 # Need to add details re. the run inputs (token address, pool manager (once deployed on mainnet), and destination address (whcih is the token above on scroll network))
 ```
 
