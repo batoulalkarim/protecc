@@ -70,6 +70,7 @@ forge script script/Protecc.s.sol \
 
 -   [ ] Handle ETH pools (Spark has a lending protocol called SparkLend. Any ETH deposited into this hook will be used in SparkLend. When the ETH is deposited into SparkLend, the protocol will borrow sDAI / DAI. The borrowed collateral stays as float in the protocol.)
 -   [ ] Handle rewards better (right now we wrap and unwrap DAI to Savings DAI but we are not keeping track of rewards properly). In the future, we want to make it clear to the liquidity provider how much they are earning from swap fees and how much they are earning from Savings DAI when their DAI is not in position.
+-   [ ] Update the NFT metadata so that it incorporates more data related to the modify position call (e.g. ticks, liquidity, dates, etc.) - we can use this to distribute awards later
 
 ### License
 
