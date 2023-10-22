@@ -27,19 +27,9 @@ import {AxelarExecutable} from "axelar-gmp-sdk-solidity/executable/AxelarExecuta
 import {IAxelarGasService} from "axelar-gmp-sdk-solidity/interfaces/IAxelarGasService.sol";
 
 contract NewIdea is BaseHook, AxelarExecutable {
-    // Note: Figure out how to store out of range DAI
-    // as sDAI and then roll them back into DAI at nearby ticks
-
-    // Which means we'll have a balance of sDAI and a balance of DAI
-    // Need to check the ticks at every swap to see what the deal is and
-    // based on that, convert the sDAI to DAI or vice versa
     using Pool for *;
     using PoolIdLibrary for PoolKey;
     using CurrencyLibrary for Currency;
-
-    string public value;
-    string public sourceChain;
-    string public sourceAddress;
 
     ISavingsDai public immutable savingsDai =
         ISavingsDai(0x83F20F44975D03b1b09e64809B757c47f942BEeA);
@@ -247,7 +237,6 @@ contract NewIdea is BaseHook, AxelarExecutable {
         IPoolManager.ModifyPositionParams calldata params,
         bytes calldata
     ) external override returns (bytes4) {
-        // NOTE: UPDATE THIS FUNCTION
         if (params.liquidityDelta < 0) {
             _ensureAmountsForModifyPosition(
                 sender,

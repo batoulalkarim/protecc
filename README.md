@@ -1,4 +1,4 @@
-# Attacc
+# Protecc
 
 Create pools on Uniswap V4 and automatically use Spark Protocol to maximize yield for LPs.
 
@@ -8,7 +8,7 @@ Create pools on Uniswap V4 and automatically use Spark Protocol to maximize yiel
 
 ## Overview
 
-Attacc is a Uniswap V4 hook that allows developers and builders to create liquidity pools that automatically leverage Spark Protocol's sDAI and SparkLend. Hooks can enable liquidity providers to earn yield on their liquidity if the pools are created with ETH or DAI.
+Protecc is a Uniswap V4 hook that allows developers and builders to create liquidity pools that automatically leverage Spark Protocol's sDAI and SparkLend. Hooks can enable liquidity providers to earn yield on their liquidity if the pools are created with ETH or DAI.
 
 ### Context
 
