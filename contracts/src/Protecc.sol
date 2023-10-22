@@ -87,7 +87,7 @@ contract Protecc is BaseHook, AxelarExecutable {
         return
             Hooks.Calls({
                 beforeInitialize: false,
-                afterInitialize: true,
+                afterInitialize: false,
                 beforeModifyPosition: true,
                 afterModifyPosition: true,
                 beforeSwap: false,
@@ -264,17 +264,6 @@ contract Protecc is BaseHook, AxelarExecutable {
             _proteccNftData.destinationChain, // We want this to be wherever the NFT with axelar support is deployed
             payload
         );
-    }
-
-    function afterInitialize(
-        address,
-        PoolKey calldata key,
-        uint160,
-        int24,
-        bytes calldata
-    ) external override returns (bytes4) {
-        _handleLiquidityPositions(key);
-        return BaseHook.afterInitialize.selector;
     }
 
     function afterSwap(

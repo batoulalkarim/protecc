@@ -47,8 +47,7 @@ contract ProteccScript is Script, Deployers {
     ) public {
         vm.startBroadcast();
         uint160 flags = uint160(
-            Hooks.BEFORE_INITIALIZE_FLAG |
-                Hooks.BEFORE_MODIFY_POSITION_FLAG |
+            Hooks.BEFORE_MODIFY_POSITION_FLAG |
                 Hooks.AFTER_MODIFY_POSITION_FLAG |
                 Hooks.AFTER_SWAP_FLAG
         );
