@@ -1,16 +1,92 @@
 .container {
   color: white;
+  .title {
+    padding: 10px 20px;
+    text-align: center;
+  }
   .content {
     .ethAssets {
-      border: 1px solid white;
+      padding: 20px;
+      .ethTable {
+        background-color: rgb(19, 19, 19);
+        border-radius: 25px;
+        padding: 10px 0 0 0;
+        border-bottom-left-radius: 5px;
+        border-bottom-right-radius: 5px;
+        border: 1px solid rgb(45, 44, 44);
+        .labels {
+          display: grid;
+          grid-template-columns: 1fr 1fr 1fr;
+          padding: 0 15px 10px 25px;
+          font-size: 14px;
+          color: grey;
+          .balanceAndPrice {
+            display: flex;
+            gap: 200px;
+          }
+        }
+        .row {
+          border: 1px solid rgb(45, 44, 44);
+          padding: 0 15px 10px 25px;
+          align-items: center;
+          display: grid;
+          grid-template-columns: 4fr 1fr 1fr;
+          border-bottom-left-radius: 5px;
+          border-bottom-right-radius: 5px;
+          .leftContainer {
+            display: flex;
+            .imageContainer {
+              display: flex;
+              align-items: center;
+              .images {
+                .img1 {
+                  max-width: 35px;
+                  border-radius: 25px;
+                  transform: translateX(-10px) translateY(3px);
+                }
+                .daiImg {
+                  max-width: 30px;
+                  border-radius: 25px;
+                }
+              }
+            }
+            .coinDetails {
+              .name {
+                font-size: 12px;
+              }
+              .chain {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                .chainLogo {
+                  max-width: 20px;
+                  max-height: 20px;
+                  border-radius: 25px;
+                }
+                .chainName {
+                  font-size: 12px;
+                  color: grey;
+                }
+              }
+            }
+          }
+          .balanceAndPriceDetails {
+            display: flex;
+            gap: 100px;
+            .balanceInCoin {
+              color: grey;
+            }
+          }
+        }
+      }
     }
+
     .daiAssets {
+      padding: 20px;
       .imagesContainer {
         display: grid;
         grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-        border: 1px solid white;
         justify-items: center;
-        // display: flex;
         row-gap: 20px;
         padding: 10px;
         .image {
@@ -21,4 +97,11 @@
       }
     }
   }
+}
+
+.red {
+  color: rgb(205, 48, 48) !important;
+}
+.green {
+  color: rgb(126, 241, 126);
 }

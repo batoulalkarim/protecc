@@ -28,11 +28,10 @@ contract ProteccTest is HookTest, Deployers, GasSnapshot {
     function setUp() public {
         HookTest.initHookTestEnv();
 
-        /// @dev Will probably need to revist initialize, modify position, and donate
         uint160 flags = uint160(
-            Hooks.BEFORE_MODIFY_POSITION_FLAG |
+            Hooks.BEFORE_INITIALIZE_FLAG |
+                Hooks.BEFORE_MODIFY_POSITION_FLAG |
                 Hooks.AFTER_MODIFY_POSITION_FLAG |
-                Hooks.BEFORE_SWAP_FLAG |
                 Hooks.AFTER_SWAP_FLAG
         );
 

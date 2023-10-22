@@ -21,6 +21,7 @@ Protecc is a Uniswap V4 hook that allows developers and builders to create liqui
 #### NFTs as identifiers
 
 1. We are using Axelar and a simple NFT contract to capture liquidity positions in our Uniswap V4 hook. To save on gas costs, we deployed the NFT on Scroll network. Whenever a user adds / removes liquidity, we create a simple NFT for them on the Scroll network with Axelar messaging.
+2. The Scroll NFT is deployed [here](https://scrollscan.com/address/0xf149159900732baa70deae97940f02a75ff39fab).
 
 ### Benefits
 
@@ -30,22 +31,29 @@ Protecc is a Uniswap V4 hook that allows developers and builders to create liqui
 ### Mechanism
 
 1. Hooks used:
-2. ERC20 base is Solady
-3. Deployment is outlined in `script/`
-
-### Usage
-
-To use this hook:
-
-1. Deploy `Protecc` hook on mainnet
-2. Create a pool with the hook with ETH and DAI
-3. Once the pool is ready, add liquidity (in ETH and DAI) at various ranges
-4. Deploy the `NFT` on the Scroll network
+2. Deployment is outlined in `script/`
 
 ### Deployment
 
 ```
+# Make sure you have funds on ETH and Scroll
 
+# For the NFT
+forge script script/ProteccNft.s.sol \
+ --rpc-url $SCROLL_URL \
+ --private-key $PK \
+ --broadcast
+
+# Get the address of the deployed ProteccNft contracto on scroll
+# and then update the file script/Protecc.s.sol with the value
+# for the variable referring to destinationAddress
+
+# For the Hook
+forge script script/Protecc.s.sol \
+ --rpc-url $ETH_URL \
+ --private-key $PK \
+ --broadcast
+# Need to add details re. the run inputs (token address, pool manager (once deployed on mainnet), and destination address (whcih is the token above on scroll network))
 ```
 
 ### Bonus
@@ -54,6 +62,7 @@ To use this hook:
 
 -   [ ] Handle ETH pools (Spark has a lending protocol called SparkLend. Any ETH deposited into this hook will be used in SparkLend. When the ETH is deposited into SparkLend, the protocol will borrow sDAI / DAI. The borrowed collateral stays as float in the protocol.)
 -   [ ] Handle rewards better (right now we wrap and unwrap DAI to Savings DAI but we are not keeping track of rewards properly). In the future, we want to make it clear to the liquidity provider how much they are earning from swap fees and how much they are earning from Savings DAI when their DAI is not in position.
+-   [ ] Update the NFT metadata so that it incorporates more data related to the modify position call (e.g. ticks, liquidity, dates, etc.) - we can use this to distribute awards later
 
 ### License
 
@@ -62,3 +71,7 @@ This project is licensed under the AGPL-3.0-only
 ### Disclaimer
 
 This is experimental software and is provided on an "as is" and "as available" basis.
+
+```
+
+```
