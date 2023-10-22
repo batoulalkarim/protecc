@@ -1,4 +1,4 @@
-# Attacc
+# Protecc
 
 Create pools on Uniswap V4 and automatically use Spark Protocol to maximize yield for LPs.
 
@@ -8,7 +8,7 @@ Create pools on Uniswap V4 and automatically use Spark Protocol to maximize yiel
 
 ## Overview
 
-Attacc is a Uniswap V4 hook that allows developers and builders to create liquidity pools that automatically leverage Spark Protocol's sDAI and SparkLend. Hooks can enable liquidity providers to earn yield on their liquidity if the pools are created with ETH or DAI.
+Protecc is a Uniswap V4 hook that allows developers and builders to create liquidity pools that automatically leverage Spark Protocol's sDAI and SparkLend. Hooks can enable liquidity providers to earn yield on their liquidity if the pools are created with ETH or DAI.
 
 ### Context
 
@@ -16,7 +16,7 @@ Attacc is a Uniswap V4 hook that allows developers and builders to create liquid
 
 1. Spark has a yield bearing stablecoin called Savings sDAI (sDAI). Any DAI deposited into this hook can earn yield as sDAI.
 2. As users make swaps, the range of active liquidity can change. That means that a different portion of the DAI deposited is active for traders to use to swap. Since this is true, we need to keep some DAI available for traders. The rest can earn yield as sDAI.
-3. We use hooks in Uniswap V4 to update the sDAI and DAI balances of this contract based on tick changes and liquidity. The hooks implemented are `afterInitiaze`, `afterSwap`, and `beforeModifyPosition` and `afterModifyPosition`.
+3. We use hooks in Uniswap V4 to update the sDAI and DAI balances of this contract based on tick changes and liquidity. The hooks implemented are `afterInitialize`, `afterSwap`, and `beforeModifyPosition` and `afterModifyPosition`.
 
 #### NFTs as identifiers
 
@@ -37,7 +37,7 @@ Attacc is a Uniswap V4 hook that allows developers and builders to create liquid
 
 To use this hook:
 
-1. Deploy `NewIdea` hook on mainnet
+1. Deploy `Protecc` hook on mainnet
 2. Create a pool with the hook with ETH and DAI
 3. Once the pool is ready, add liquidity (in ETH and DAI) at various ranges
 4. Deploy the `NFT` on the Scroll network
@@ -53,6 +53,7 @@ To use this hook:
 ### Todo
 
 -   [ ] Handle ETH pools (Spark has a lending protocol called SparkLend. Any ETH deposited into this hook will be used in SparkLend. When the ETH is deposited into SparkLend, the protocol will borrow sDAI / DAI. The borrowed collateral stays as float in the protocol.)
+-   [ ] Handle rewards better (right now we wrap and unwrap DAI to Savings DAI but we are not keeping track of rewards properly). In the future, we want to make it clear to the liquidity provider how much they are earning from swap fees and how much they are earning from Savings DAI when their DAI is not in position.
 
 ### License
 

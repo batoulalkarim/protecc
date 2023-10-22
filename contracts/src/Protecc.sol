@@ -22,13 +22,11 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 // Other
 import {Constants} from "./libraries/Constants.sol";
 
-contract NewIdea is BaseHook {
-    // Note: Figure out how to store out of range DAI
-    // as sDAI and then roll them back into DAI at nearby ticks
+// Axelar
+import {AxelarExecutable} from "axelar-gmp-sdk-solidity/executable/AxelarExecutable.sol";
+import {IAxelarGasService} from "axelar-gmp-sdk-solidity/interfaces/IAxelarGasService.sol";
 
-    // Which means we'll have a balance of sDAI and a balance of DAI
-    // Need to check the ticks at every swap to see what the deal is and
-    // based on that, convert the sDAI to DAI or vice versa
+contract Protecc is BaseHook, AxelarExecutable {
     using Pool for *;
     using PoolIdLibrary for PoolKey;
     using CurrencyLibrary for Currency;
@@ -39,7 +37,51 @@ contract NewIdea is BaseHook {
     ERC20 public immutable dai =
         ERC20(0x6B175474E89094C44Da98b954EedeAC495271d0F);
 
-    constructor(IPoolManager _poolManager) BaseHook(_poolManager) {}
+    IAxelarGasService public immutable gasService;
+
+    struct ProteccNftData {
+        string destinationAddress;
+        string destinationChain;
+    }
+
+    struct CallbackData {
+        address sender;
+        PoolKey key;
+        IPoolManager.ModifyPositionParams params;
+        bytes hookData;
+    }
+
+    ProteccNftData public _proteccNftData;
+
+    constructor(
+        IPoolManager _poolManager,
+        address _gateway,
+        address _gasReceiver,
+        string memory _destinationAddress,
+        string memory _destinationChain
+    ) BaseHook(_poolManager) AxelarExecutable(_gateway) {
+        gasService = IAxelarGasService(_gasReceiver);
+        _proteccNftData.destinationAddress = _destinationAddress;
+        _proteccNftData.destinationChain = _destinationChain;
+    }
+
+    function setRemoteValue(
+        string calldata destinationChain,
+        string calldata destinationAddress,
+        address value_
+    ) external payable {
+        require(msg.value > 0, "Gas payment is required");
+
+        bytes memory payload = abi.encode(value_);
+        gasService.payNativeGasForContractCall{value: msg.value}(
+            address(this),
+            destinationChain,
+            destinationAddress,
+            payload,
+            msg.sender
+        );
+        gateway.callContract(destinationChain, destinationAddress, payload);
+    }
 
     function getHooksCalls() public pure override returns (Hooks.Calls memory) {
         return
@@ -55,9 +97,7 @@ contract NewIdea is BaseHook {
             });
     }
 
-    function _handleLiquidityPositions(
-        PoolKey calldata key
-    ) private returns (uint256, uint256) {
+    function _handleLiquidityPositions(PoolKey calldata key) private {
         uint256 minDaiRequired;
         uint256 balanceDai = dai.balanceOf(address(this));
 
@@ -187,6 +227,45 @@ contract NewIdea is BaseHook {
         }
     }
 
+    function modifyPosition(
+        PoolKey memory key,
+        IPoolManager.ModifyPositionParams memory params,
+        bytes memory hookData
+    ) external payable returns (BalanceDelta delta) {
+        // This is where you call the mint function
+        // Our app will track add / remove liquidity
+        // Will mint regardless of the direction of modifying position (for now)
+        delta = abi.decode(
+            poolManager.lock(
+                abi.encode(CallbackData(msg.sender, key, params, hookData))
+            ),
+            (BalanceDelta)
+        );
+
+        uint256 ethBalance = address(this).balance;
+        if (ethBalance > 0) {
+            CurrencyLibrary.NATIVE.transfer(msg.sender, ethBalance);
+        }
+
+        // Note: The code below is specific to Axelar
+        require(msg.value > 0, "Gas payment is required");
+        // Note: We want to encode other things like modify position params, etc. here
+        // for the future
+        bytes memory payload = abi.encode(msg.sender);
+        gasService.payNativeGasForContractCall{value: msg.value}(
+            address(this),
+            _proteccNftData.destinationAddress,
+            _proteccNftData.destinationChain,
+            payload,
+            msg.sender
+        );
+        gateway.callContract(
+            _proteccNftData.destinationAddress, // We want this to be "scroll"
+            _proteccNftData.destinationChain, // We want this to be wherever the NFT with axelar support is deployed
+            payload
+        );
+    }
+
     function afterInitialize(
         address,
         PoolKey calldata key,
@@ -215,7 +294,6 @@ contract NewIdea is BaseHook {
         IPoolManager.ModifyPositionParams calldata params,
         bytes calldata
     ) external override returns (bytes4) {
-        // NOTE: UPDATE THIS FUNCTION
         if (params.liquidityDelta < 0) {
             _ensureAmountsForModifyPosition(
                 sender,
@@ -223,9 +301,6 @@ contract NewIdea is BaseHook {
                 params.tickLower,
                 params.tickUpper
             );
-            // They are removing liquidity
-            // Ensure that there is enough liquidity (if not... then)
-            // convert some sDai to dai
             // Need to figure out how to send rewards to the users too
         }
         return BaseHook.beforeModifyPosition.selector;
