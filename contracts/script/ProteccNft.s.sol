@@ -11,8 +11,8 @@ contract DeployProteccNft is Script {
         vm.startBroadcast();
 
         ProteccNft proteccNft = new ProteccNft(
-            0x37909e961860E10de295F6a02AD1b834D00424Ce,
-            0xe432150cce91c13a887f7D836923d5597adD8E31
+            0x37909e961860E10de295F6a02AD1b834D00424Ce, // Owner is us
+            0xe432150cce91c13a887f7D836923d5597adD8E31 // Axelar Gateway contract on Scroll
         );
         console.log("ProteccNft deployed at: %s", address(proteccNft));
 

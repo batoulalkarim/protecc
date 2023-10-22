@@ -21,6 +21,7 @@ Protecc is a Uniswap V4 hook that allows developers and builders to create liqui
 #### NFTs as identifiers
 
 1. We are using Axelar and a simple NFT contract to capture liquidity positions in our Uniswap V4 hook. To save on gas costs, we deployed the NFT on Scroll network. Whenever a user adds / removes liquidity, we create a simple NFT for them on the Scroll network with Axelar messaging.
+2. The Scroll NFT is deployed [here](https://scrollscan.com/address/0xf149159900732baa70deae97940f02a75ff39fab).
 
 ### Benefits
 
@@ -30,17 +31,7 @@ Protecc is a Uniswap V4 hook that allows developers and builders to create liqui
 ### Mechanism
 
 1. Hooks used:
-2. ERC20 base is Solady
-3. Deployment is outlined in `script/`
-
-### Usage
-
-To use this hook:
-
-1. Deploy `Protecc` hook on mainnet
-2. Create a pool with the hook with ETH and DAI
-3. Once the pool is ready, add liquidity (in ETH and DAI) at various ranges
-4. Deploy the `NFT` on the Scroll network
+2. Deployment is outlined in `script/`
 
 ### Deployment
 
