@@ -74,7 +74,3 @@ This project is licensed under the AGPL-3.0-only
 ### Disclaimer
 
 This is experimental software and is provided on an "as is" and "as available" basis.
-
-```
-
-```
