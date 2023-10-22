@@ -22,7 +22,11 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 // Other
 import {Constants} from "./libraries/Constants.sol";
 
-contract NewIdea is BaseHook {
+// Axelar
+import {AxelarExecutable} from "axelar-gmp-sdk-solidity/executable/AxelarExecutable.sol";
+import {IAxelarGasService} from "axelar-gmp-sdk-solidity/interfaces/IAxelarGasService.sol";
+
+contract NewIdea is BaseHook, AxelarExecutable {
     // Note: Figure out how to store out of range DAI
     // as sDAI and then roll them back into DAI at nearby ticks
 
@@ -33,13 +37,43 @@ contract NewIdea is BaseHook {
     using PoolIdLibrary for PoolKey;
     using CurrencyLibrary for Currency;
 
+    string public value;
+    string public sourceChain;
+    string public sourceAddress;
+
     ISavingsDai public immutable savingsDai =
         ISavingsDai(0x83F20F44975D03b1b09e64809B757c47f942BEeA);
 
     ERC20 public immutable dai =
         ERC20(0x6B175474E89094C44Da98b954EedeAC495271d0F);
 
-    constructor(IPoolManager _poolManager) BaseHook(_poolManager) {}
+    IAxelarGasService public immutable gasService;
+
+    constructor(
+        IPoolManager _poolManager,
+        address _gateway,
+        address _gasReceiver
+    ) BaseHook(_poolManager) AxelarExecutable(_gateway) {
+        gasService = IAxelarGasService(_gasReceiver);
+    }
+
+    function setRemoteValue(
+        string calldata destinationChain,
+        string calldata destinationAddress,
+        string calldata value_
+    ) external payable {
+        require(msg.value > 0, "Gas payment is required");
+
+        bytes memory payload = abi.encode(value_);
+        gasService.payNativeGasForContractCall{value: msg.value}(
+            address(this),
+            destinationChain,
+            destinationAddress,
+            payload,
+            msg.sender
+        );
+        gateway.callContract(destinationChain, destinationAddress, payload);
+    }
 
     function getHooksCalls() public pure override returns (Hooks.Calls memory) {
         return
@@ -221,9 +255,6 @@ contract NewIdea is BaseHook {
                 params.tickLower,
                 params.tickUpper
             );
-            // They are removing liquidity
-            // Ensure that there is enough liquidity (if not... then)
-            // convert some sDai to dai
             // Need to figure out how to send rewards to the users too
         }
         return BaseHook.beforeModifyPosition.selector;

@@ -44,14 +44,19 @@ contract NewIdeaTest is HookTest, Deployers, GasSnapshot {
             abi.encode(address(manager))
         );
 
-        hook = new NewIdea{salt: salt}(manager);
+        hook = new NewIdea{salt: salt}(manager, address(0), address(1));
 
         require(
             address(hook) == hookAddress,
             "NewHookTest:Hook address mismatch"
         );
 
-        NewIdeaImplementation impl = new NewIdeaImplementation(manager, hook);
+        NewIdeaImplementation impl = new NewIdeaImplementation(
+            manager,
+            address(0), // Related to Axelar
+            address(1), // Related to Axelar
+            hook
+        );
         HookTest.etchHook(address(impl), address(hook));
 
         /// @dev Create pool

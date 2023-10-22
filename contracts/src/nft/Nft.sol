@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import {AxelarExecutable} from "axelar-gmp-sdk-solidity/executable/AxelarExecutable.sol";
 import {IAxelarGateway} from "axelar-gmp-sdk-solidity/interfaces/IAxelarGateway.sol";
-import {IAxelarGasService} from "axelar-gmp-sdk-solidity/interfaces/IAxelarGasService.sol";
 import {IERC20} from "axelar-gmp-sdk-solidity/interfaces/IERC20.sol";
 
 contract NFT is ERC721, ERC721URIStorage, Ownable, AxelarExecutable {
@@ -14,7 +13,6 @@ contract NFT is ERC721, ERC721URIStorage, Ownable, AxelarExecutable {
     string public value;
     string public sourceChain;
     string public sourceAddress;
-    IAxelarGasService public immutable gasService;
 
     constructor(
         address initialOwner,
@@ -24,9 +22,7 @@ contract NFT is ERC721, ERC721URIStorage, Ownable, AxelarExecutable {
         ERC721("Protecc", "PTC")
         Ownable(initialOwner)
         AxelarExecutable(gateway_)
-    {
-        gasService = IAxelarGasService(gasReceiver_);
-    }
+    {}
 
     function _baseURI() internal pure override returns (string memory) {
         return "https://www.google.com";
@@ -50,24 +46,6 @@ contract NFT is ERC721, ERC721URIStorage, Ownable, AxelarExecutable {
         bytes4 interfaceId
     ) public view override(ERC721, ERC721URIStorage) returns (bool) {
         return super.supportsInterface(interfaceId);
-    }
-
-    function setRemoteValue(
-        string calldata destinationChain,
-        string calldata destinationAddress,
-        string calldata value_
-    ) external payable {
-        require(msg.value > 0, "Gas payment is required");
-
-        bytes memory payload = abi.encode(value_);
-        gasService.payNativeGasForContractCall{value: msg.value}(
-            address(this),
-            destinationChain,
-            destinationAddress,
-            payload,
-            msg.sender
-        );
-        gateway.callContract(destinationChain, destinationAddress, payload);
     }
 
     // Handles calls created by setAndSend. Updates this contract's value

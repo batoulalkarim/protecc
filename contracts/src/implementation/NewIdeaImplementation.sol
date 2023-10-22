@@ -8,7 +8,12 @@ import {IPoolManager} from "@uniswap/v4-core/contracts/interfaces/IPoolManager.s
 import {Hooks} from "@uniswap/v4-core/contracts/libraries/Hooks.sol";
 
 contract NewIdeaImplementation is NewIdea {
-    constructor(IPoolManager manager, NewIdea addressToEtch) NewIdea(manager) {
+    constructor(
+        IPoolManager manager,
+        address gateway,
+        address gasReceiver,
+        NewIdea addressToEtch
+    ) NewIdea(manager, gateway, gasReceiver) {
         Hooks.validateHookAddress(addressToEtch, getHooksCalls());
     }
 
