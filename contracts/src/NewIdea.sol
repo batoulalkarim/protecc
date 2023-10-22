@@ -95,6 +95,13 @@ contract NewIdea is BaseHook {
         }
     }
 
+    function _ensureAmountsForModifyPosition(
+        PoolKey calldata key,
+        uint256 liquidityDelta
+    ) private {
+        // Use this function to leveage make sdai or make dai avail
+    }
+
     function _calculateTickLower(
         int24 actualTick,
         int24 tickSpacing
@@ -169,12 +176,13 @@ contract NewIdea is BaseHook {
 
     function beforeModifyPosition(
         address,
-        PoolKey calldata,
+        PoolKey calldata key,
         IPoolManager.ModifyPositionParams calldata params,
         bytes calldata
     ) external override returns (bytes4) {
         // NOTE: UPDATE THIS FUNCTION
         if (params.liquidityDelta < 0) {
+            _ensureAmountsForModifyPosition(key, params.liquidityDelta);
             // They are removing liquidity
             // Ensure that there is enough liquidity (if not... then)
             // convert some sDai to dai
