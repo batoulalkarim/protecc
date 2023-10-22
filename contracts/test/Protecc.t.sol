@@ -80,25 +80,25 @@ contract ProteccTest is HookTest, Deployers, GasSnapshot {
 
         // Provide liquidity to the pool
         vm.startPrank(msg.sender);
-        modifyPositionRouter.modifyPosition(
+        modifyPositionRouter.modifyPosition{value: 0.01 ether}(
             poolKey,
             IPoolManager.ModifyPositionParams(-60, 60, 1_000e18),
             ZERO_BYTES
         );
-        modifyPositionRouter.modifyPosition(
-            poolKey,
-            IPoolManager.ModifyPositionParams(-120, 120, 1_000e18),
-            ZERO_BYTES
-        );
-        modifyPositionRouter.modifyPosition(
-            poolKey,
-            IPoolManager.ModifyPositionParams(
-                TickMath.minUsableTick(60),
-                TickMath.maxUsableTick(60),
-                1_000e18
-            ),
-            ZERO_BYTES
-        );
+        // modifyPositionRouter.modifyPosition(
+        //     poolKey,
+        //     IPoolManager.ModifyPositionParams(-120, 120, 1_000e18),
+        //     ZERO_BYTES
+        // );
+        // modifyPositionRouter.modifyPosition(
+        //     poolKey,
+        //     IPoolManager.ModifyPositionParams(
+        //         TickMath.minUsableTick(60),
+        //         TickMath.maxUsableTick(60),
+        //         1_000e18
+        //     ),
+        //     ZERO_BYTES
+        // );
         vm.stopPrank();
     }
 
