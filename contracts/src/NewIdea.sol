@@ -55,9 +55,7 @@ contract NewIdea is BaseHook {
             });
     }
 
-    function _handleLiquidityPositions(
-        PoolKey calldata key
-    ) private returns (uint256, uint256) {
+    function _handleLiquidityPositions(PoolKey calldata key) private {
         uint256 minDaiRequired;
         uint256 balanceDai = dai.balanceOf(address(this));
 
