@@ -26,7 +26,7 @@ import {Constants} from "./libraries/Constants.sol";
 import {AxelarExecutable} from "axelar-gmp-sdk-solidity/executable/AxelarExecutable.sol";
 import {IAxelarGasService} from "axelar-gmp-sdk-solidity/interfaces/IAxelarGasService.sol";
 
-contract NewIdea is BaseHook, AxelarExecutable {
+contract Protecc is BaseHook, AxelarExecutable {
     using Pool for *;
     using PoolIdLibrary for PoolKey;
     using CurrencyLibrary for Currency;
