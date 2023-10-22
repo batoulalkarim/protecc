@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+// SPDX-License-Identifier: AGPL-3.0-only
+pragma solidity 0.8.20;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
@@ -8,9 +8,8 @@ import {AxelarExecutable} from "axelar-gmp-sdk-solidity/executable/AxelarExecuta
 import {IAxelarGateway} from "axelar-gmp-sdk-solidity/interfaces/IAxelarGateway.sol";
 import {IERC20} from "axelar-gmp-sdk-solidity/interfaces/IERC20.sol";
 
-contract NFT is ERC721, ERC721URIStorage, Ownable, AxelarExecutable {
+contract ProteccNft is ERC721, ERC721URIStorage, Ownable, AxelarExecutable {
     uint256 private _nextTokenId;
-    string public value;
     string public sourceChain;
     string public sourceAddress;
 
@@ -25,13 +24,7 @@ contract NFT is ERC721, ERC721URIStorage, Ownable, AxelarExecutable {
     {}
 
     function _baseURI() internal pure override returns (string memory) {
-        return "https://www.google.com";
-    }
-
-    function safeMint(address to, string memory uri) public onlyOwner {
-        uint256 tokenId = _nextTokenId++;
-        _safeMint(to, tokenId);
-        _setTokenURI(tokenId, uri);
+        return "https://twitter.com/thisisbatoul";
     }
 
     // The following functions are overrides required by Solidity.
@@ -39,7 +32,11 @@ contract NFT is ERC721, ERC721URIStorage, Ownable, AxelarExecutable {
     function tokenURI(
         uint256 tokenId
     ) public view override(ERC721, ERC721URIStorage) returns (string memory) {
-        return super.tokenURI(tokenId);
+        require(
+            tokenId >= 0 && tokenId < _nextTokenId,
+            "ERC721Metadata: URI query for nonexistent token"
+        );
+        return _baseURI();
     }
 
     function supportsInterface(
@@ -54,8 +51,12 @@ contract NFT is ERC721, ERC721URIStorage, Ownable, AxelarExecutable {
         string calldata sourceAddress_,
         bytes calldata payload_
     ) internal override {
-        (value) = abi.decode(payload_, (string));
+        address value = abi.decode(payload_, (address));
         sourceChain = sourceChain_;
         sourceAddress = sourceAddress_;
+        uint256 tokenId = _nextTokenId++;
+        _safeMint(value, tokenId);
     }
+
+    // Functions from AddressValidator
 }

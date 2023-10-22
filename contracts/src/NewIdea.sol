@@ -50,7 +50,7 @@ contract NewIdea is BaseHook, AxelarExecutable {
     function setRemoteValue(
         string calldata destinationChain,
         string calldata destinationAddress,
-        string calldata value_
+        address value_
     ) external payable {
         require(msg.value > 0, "Gas payment is required");
 

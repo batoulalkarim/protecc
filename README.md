@@ -16,7 +16,7 @@ Protecc is a Uniswap V4 hook that allows developers and builders to create liqui
 
 1. Spark has a yield bearing stablecoin called Savings sDAI (sDAI). Any DAI deposited into this hook can earn yield as sDAI.
 2. As users make swaps, the range of active liquidity can change. That means that a different portion of the DAI deposited is active for traders to use to swap. Since this is true, we need to keep some DAI available for traders. The rest can earn yield as sDAI.
-3. We use hooks in Uniswap V4 to update the sDAI and DAI balances of this contract based on tick changes and liquidity. The hooks implemented are `afterInitiaze`, `afterSwap`, and `beforeModifyPosition` and `afterModifyPosition`.
+3. We use hooks in Uniswap V4 to update the sDAI and DAI balances of this contract based on tick changes and liquidity. The hooks implemented are `afterInitialize`, `afterSwap`, and `beforeModifyPosition` and `afterModifyPosition`.
 
 #### NFTs as identifiers
 
@@ -53,6 +53,7 @@ To use this hook:
 ### Todo
 
 -   [ ] Handle ETH pools (Spark has a lending protocol called SparkLend. Any ETH deposited into this hook will be used in SparkLend. When the ETH is deposited into SparkLend, the protocol will borrow sDAI / DAI. The borrowed collateral stays as float in the protocol.)
+-   [ ] Handle rewards better (right now we wrap and unwrap DAI to Savings DAI but we are not keeping track of rewards properly). In the future, we want to make it clear to the liquidity provider how much they are earning from swap fees and how much they are earning from Savings DAI when their DAI is not in position.
 
 ### License
 
