@@ -45,7 +45,23 @@ To use this hook:
 ### Deployment
 
 ```
+# Make sure you have funds on ETH and Scroll
 
+# For the NFT
+forge script script/ProteccNft.s.sol \
+ --rpc-url $SCROLL_URL \
+ --private-key $PK \
+ --broadcast
+
+# Get the address of the deployed ProteccNft contracto on scroll
+# and then update the file script/Protecc.s.sol with the value
+# for the variable referring to destinationAddress
+
+# For the Hook
+forge script script/Protecc.s.sol \
+ --rpc-url $ETH_URL \
+ --private-key $PK \
+ --broadcast
 ```
 
 ### Bonus
@@ -62,3 +78,7 @@ This project is licensed under the AGPL-3.0-only
 ### Disclaimer
 
 This is experimental software and is provided on an "as is" and "as available" basis.
+
+```
+
+```
