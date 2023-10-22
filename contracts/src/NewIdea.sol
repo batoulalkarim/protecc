@@ -56,36 +56,29 @@ contract NewIdea is BaseHook {
 
     function _handleLiquidityPositions(
         PoolKey calldata key
-    ) private returns (uint256 amount0, uint256 amount1) {
+    ) private returns (uint256, uint256) {
         uint256 minDaiRequired;
         uint256 balanceDai = dai.balanceOf(address(this));
 
         (, int24 tick, , ) = poolManager.getSlot0(key.toId());
         uint128 liquidity = poolManager.getLiquidity(key.toId());
         // Calculate amount for dai and token
-        int24 tickLower = calculateTickLower(tick, key.tickSpacing);
-        int24 tickUpper = calculateTickUpper(tick, key.tickSpacing);
+        int24 tickLower = _calculateTickLower(tick, key.tickSpacing);
+        int24 tickUpper = _calculateTickUpper(tick, key.tickSpacing);
 
         uint160 sqrtPriceAX96 = TickMath.getSqrtRatioAtTick(tickLower);
         uint160 sqrtPriceBX96 = TickMath.getSqrtRatioAtTick(tickUpper);
         uint160 sqrtPriceCurrentX96 = TickMath.getSqrtRatioAtTick(tick);
 
-        if (tick < tickLower) {
-            amount0 =
-                (uint256(liquidity) * (sqrtPriceBX96 - sqrtPriceAX96)) >>
-                96;
-        } else if (tick >= tickLower && tick < tickUpper) {
-            amount0 =
-                (uint256(liquidity) * (sqrtPriceBX96 - sqrtPriceCurrentX96)) >>
-                96;
-            amount1 =
-                (uint256(liquidity) * (sqrtPriceCurrentX96 - sqrtPriceAX96)) >>
-                96;
-        } else if (tick >= tickUpper) {
-            amount1 =
-                (uint256(liquidity) * (sqrtPriceBX96 - sqrtPriceAX96)) >>
-                96;
-        }
+        (uint256 amount0, uint256 amount1) = _calculateAmounts(
+            tick,
+            tickLower,
+            tickUpper,
+            sqrtPriceAX96,
+            sqrtPriceBX96,
+            sqrtPriceCurrentX96,
+            liquidity
+        );
 
         if ((key.currency0) == Currency.wrap((address(dai)))) {
             minDaiRequired = amount0;
@@ -102,10 +95,10 @@ contract NewIdea is BaseHook {
         }
     }
 
-    function calculateTickLower(
+    function _calculateTickLower(
         int24 actualTick,
         int24 tickSpacing
-    ) public pure returns (int24) {
+    ) internal pure returns (int24) {
         int24 tickLowerMultiple = actualTick / tickSpacing;
         if (actualTick < 0 && actualTick % tickSpacing != 0) {
             tickLowerMultiple = tickLowerMultiple - 1; // Implementing floor function for negative numbers
@@ -114,15 +107,42 @@ contract NewIdea is BaseHook {
     }
 
     // Calculate the tickUpper given the actualTick and tickSpacing
-    function calculateTickUpper(
+    function _calculateTickUpper(
         int24 actualTick,
         int24 tickSpacing
-    ) public pure returns (int24) {
+    ) internal pure returns (int24) {
         int24 tickUpperMultiple = actualTick / tickSpacing;
         if (actualTick >= 0 && actualTick % tickSpacing != 0) {
             tickUpperMultiple = tickUpperMultiple + 1; // Implementing ceiling function for positive numbers
         }
         return tickUpperMultiple * tickSpacing;
+    }
+
+    function _calculateAmounts(
+        int24 tick,
+        int24 tickLower,
+        int24 tickUpper,
+        uint160 sqrtPriceAX96,
+        uint160 sqrtPriceBX96,
+        uint160 sqrtPriceCurrentX96,
+        uint128 liquidity
+    ) internal pure returns (uint256 amount0, uint256 amount1) {
+        if (tick < tickLower) {
+            amount0 =
+                (uint256(liquidity) * (sqrtPriceBX96 - sqrtPriceAX96)) >>
+                96;
+        } else if (tick >= tickLower && tick < tickUpper) {
+            amount0 =
+                (uint256(liquidity) * (sqrtPriceBX96 - sqrtPriceCurrentX96)) >>
+                96;
+            amount1 =
+                (uint256(liquidity) * (sqrtPriceCurrentX96 - sqrtPriceAX96)) >>
+                96;
+        } else if (tick >= tickUpper) {
+            amount1 =
+                (uint256(liquidity) * (sqrtPriceBX96 - sqrtPriceAX96)) >>
+                96;
+        }
     }
 
     function afterInitialize(
