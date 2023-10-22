@@ -15,8 +15,7 @@ contract ProteccNft is ERC721, ERC721URIStorage, Ownable, AxelarExecutable {
 
     constructor(
         address initialOwner,
-        address gateway_,
-        address gasReceiver_
+        address gateway_
     )
         ERC721("Protecc", "PTC")
         Ownable(initialOwner)
